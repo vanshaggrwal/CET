@@ -1,0 +1,241 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CET Mock Test Design System - Academic, Trustworthy, Exam-grade */
+
+@layer base {
+  :root {
+    /* Academic blue palette - trustworthy, professional */
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Deep academic blue for primary actions */
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+
+    /* Warning/Destructive - serious but not alarming */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
+
+    --radius: 0.5rem;
+
+    /* Subject colors for exam navigation */
+    --physics: 221 83% 53%;
+    --chemistry: 142 71% 45%;
+    --mathematics: 262 83% 58%;
+
+    /* Status colors */
+    --success: 142 71% 45%;
+    --warning: 38 92% 50%;
+    --info: 199 89% 48%;
+
+    /* Timer colors */
+    --timer-safe: 142 71% 45%;
+    --timer-warning: 38 92% 50%;
+    --timer-danger: 0 72% 51%;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 221 83% 53%;
+
+    --chart-1: 221 83% 53%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 262 83% 58%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 199 89% 48%;
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 15%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 15%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217 33% 25%;
+    --input: 217 33% 25%;
+    --ring: 217 91% 60%;
+
+    --physics: 217 91% 60%;
+    --chemistry: 142 76% 36%;
+    --mathematics: 262 83% 68%;
+
+    --success: 142 76% 36%;
+    --warning: 38 92% 50%;
+    --info: 199 89% 48%;
+
+    --timer-safe: 142 76% 36%;
+    --timer-warning: 38 92% 50%;
+    --timer-danger: 0 63% 51%;
+
+    --sidebar-background: 222 47% 15%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 25%;
+    --sidebar-ring: 217 91% 60%;
+
+    --chart-1: 217 91% 60%;
+    --chart-2: 142 76% 36%;
+    --chart-3: 262 83% 68%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 199 89% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Exam-grade card styling */
+  .exam-card {
+    @apply bg-card rounded-lg border border-border shadow-md p-6;
+  }
+
+  /* Subject badges */
+  .subject-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .subject-badge-physics {
+    background-color: hsl(var(--physics) / 0.1);
+    color: hsl(var(--physics));
+  }
+
+  .subject-badge-chemistry {
+    background-color: hsl(var(--success) / 0.1);
+    color: hsl(var(--success));
+  }
+
+  .subject-badge-mathematics {
+    background-color: hsl(var(--mathematics) / 0.1);
+    color: hsl(var(--mathematics));
+  }
+
+  /* Question navigation states */
+  .question-nav-item {
+    @apply w-10 h-10 rounded-md flex items-center justify-center text-sm font-medium border transition-all cursor-pointer;
+  }
+
+  .question-nav-unattempted {
+    @apply bg-muted text-muted-foreground border-border hover:border-primary;
+  }
+
+  .question-nav-attempted {
+    @apply bg-primary text-primary-foreground border-primary;
+  }
+
+  .question-nav-current {
+    @apply ring-2 ring-primary ring-offset-2;
+  }
+
+  /* Timer styling */
+  .timer-display {
+    @apply font-mono text-lg font-bold tracking-wider;
+  }
+
+  .timer-safe {
+    color: hsl(var(--timer-safe));
+  }
+
+  .timer-warning {
+    color: hsl(var(--timer-warning));
+  }
+
+  .timer-danger {
+    color: hsl(var(--timer-danger));
+    @apply animate-pulse;
+  }
+
+  /* Progress indicator */
+  .step-indicator {
+    @apply flex items-center gap-2;
+  }
+
+  .step-dot {
+    @apply w-3 h-3 rounded-full transition-colors;
+  }
+
+  .step-dot-active {
+    @apply bg-primary;
+  }
+
+  .step-dot-inactive {
+    @apply bg-muted-foreground/30;
+  }
+
+  .step-dot-completed {
+    @apply bg-primary;
+  }
+}
+
+@layer utilities {
+  .exam-focus {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+}
