@@ -4,27 +4,34 @@ import TestHeader from "@/components/TestHeader";
 import QuestionCard from "@/components/QuestionCard";
 import QuestionNavigation from "@/components/QuestionNavigation";
 import {
-  generateRandomQuestions,
   saveTestState,
   getTestState,
   saveTestResult,
   calculateResults,
   getUserData,
   TestState,
+  Question,
 } from "@/lib/testUtils";
+import { fetchExamQuestionsFromFirestore } from "@/lib/questionService";
 import { saveResultToFirebase } from "@/lib/resultService";
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 
-const TEST_DURATION = 3 * 60 * 60; // 3 hours (seconds)
+const TEST_DURATION = 3 * 60 * 60; // 3 hours
+
+const subjectOrder: Record<string, number> = {
+  physics: 1,
+  chemistry: 2,
+  mathematics: 3,
+};
 
 const Exam = () => {
   const navigate = useNavigate();
@@ -35,24 +42,34 @@ const Exam = () => {
 
   const userData = getUserData();
 
-  /* ===================== INIT TEST ===================== */
+  /* ================= INIT TEST ================= */
+
   useEffect(() => {
     if (!userData) {
       navigate("/mock-test/register");
       return;
     }
 
-    const saved = getTestState();
+    const initTest = async () => {
+      const saved = getTestState();
 
-    if (saved && !saved.isSubmitted) {
-      setTestState(saved);
-    } else {
-      const questions = generateRandomQuestions();
+      if (saved && !saved.isSubmitted) {
+        setTestState(saved);
+        return;
+      }
+
+      const fetched = await fetchExamQuestionsFromFirestore();
+
+      // 🔒 HARD GUARANTEE SUBJECT ORDER
+      const ordered = [...fetched].sort(
+        (a, b) => subjectOrder[a.subject] - subjectOrder[b.subject]
+      );
+
       const answers: Record<string, number | null> = {};
-      questions.forEach((q) => (answers[q.id] = null));
+      ordered.forEach((q) => (answers[q.id] = null));
 
       const freshState: TestState = {
-        questions,
+        questions: ordered,
         answers,
         startTime: Date.now(),
         currentQuestion: 0,
@@ -61,13 +78,16 @@ const Exam = () => {
 
       setTestState(freshState);
       saveTestState(freshState);
-    }
+    };
+
+    initTest();
   }, [navigate, userData]);
 
-  /* ===================== SUBMIT TEST ===================== */
+  /* ================= SUBMIT ================= */
+
   const submitTest = useCallback(
     async (reason: "completed" | "timeout" | "violation") => {
-      if (!testState || isSubmittingRef.current || !userData) return;
+      if (!testState || !userData || isSubmittingRef.current) return;
       isSubmittingRef.current = true;
 
       const finalState: TestState = {
@@ -83,10 +103,7 @@ const Exam = () => {
         testState.answers
       );
 
-      // 🔥 Save result locally
       saveTestResult(result);
-
-      // 🔥 Save result to Firebase (for Admin)
       await saveResultToFirebase(userData.email, result);
 
       navigate("/mock-test/results");
@@ -94,40 +111,32 @@ const Exam = () => {
     [testState, userData, navigate]
   );
 
-  /* ===================== TAB SWITCH / BLUR ===================== */
+  /* ================= SAFETY ================= */
+
   useEffect(() => {
     if (!testState || testState.isSubmitted) return;
 
     const violation = () => {
-      if (!isSubmittingRef.current) {
-        setShowViolationDialog(true);
-      }
+      if (!isSubmittingRef.current) setShowViolationDialog(true);
     };
 
-    const visibilityHandler = () => {
+    document.addEventListener("visibilitychange", () => {
       if (document.hidden) violation();
-    };
-
-    document.addEventListener("visibilitychange", visibilityHandler);
+    });
     window.addEventListener("blur", violation);
 
     return () => {
-      document.removeEventListener("visibilitychange", visibilityHandler);
       window.removeEventListener("blur", violation);
     };
   }, [testState]);
 
-  if (!testState) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading test…
-      </div>
-    );
+  if (!testState || testState.questions.length === 0) {
+    return <div className="min-h-screen flex items-center justify-center">Loading exam…</div>;
   }
 
   const currentQuestion = testState.questions[testState.currentQuestion];
 
-  /* ===================== HELPERS ===================== */
+  /* ================= HELPERS ================= */
 
   const goToQuestion = (index: number) => {
     const updated = { ...testState, currentQuestion: index };
@@ -147,7 +156,7 @@ const Exam = () => {
     saveTestState(updated);
   };
 
-  /* ===================== RENDER ===================== */
+  /* ================= UI ================= */
 
   return (
     <div className="min-h-screen bg-background">
@@ -169,9 +178,7 @@ const Exam = () => {
             onPrevious={() => goToQuestion(testState.currentQuestion - 1)}
             onNext={() => goToQuestion(testState.currentQuestion + 1)}
             canGoPrevious={testState.currentQuestion > 0}
-            canGoNext={
-              testState.currentQuestion < testState.questions.length - 1
-            }
+            canGoNext={testState.currentQuestion < testState.questions.length - 1}
           />
         </div>
 
@@ -183,7 +190,7 @@ const Exam = () => {
         />
       </div>
 
-      {/* ===================== SUBMIT CONFIRM ===================== */}
+      {/* SUBMIT CONFIRM */}
       <AlertDialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -201,7 +208,7 @@ const Exam = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* ===================== VIOLATION ===================== */}
+      {/* VIOLATION */}
       <AlertDialog open={showViolationDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -209,8 +216,7 @@ const Exam = () => {
               Violation Detected
             </AlertDialogTitle>
             <AlertDialogDescription>
-              You switched tabs or left the exam window. As per rules, your test
-              will now be submitted.
+              You left the exam window. The test will be submitted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

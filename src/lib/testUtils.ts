@@ -1,21 +1,34 @@
-import questionsData from '@/data/questions.json';
+/* ===================== TYPES ===================== */
+
+export type Subject = "physics" | "chemistry" | "mathematics";
 
 export interface Question {
   id: string;
   question: string;
   options: string[];
-  answer: number;
-  subject: 'physics' | 'chemistry' | 'mathematics';
+  correctAnswer: number;
+  subject: Subject;
 }
 
 export interface UserData {
   firstName: string;
   lastName: string;
-  currentCollege: string;
+  email: string;
+  mobile: string;
   state: string;
   city: string;
-  email: string;
-  phone: string;
+}
+
+export interface SubjectResult {
+  correct: number;
+  total: number;
+}
+
+export interface TestResult {
+  totalScore: number;
+  physics: SubjectResult;
+  chemistry: SubjectResult;
+  mathematics: SubjectResult;
 }
 
 export interface TestState {
@@ -24,157 +37,157 @@ export interface TestState {
   startTime: number;
   currentQuestion: number;
   isSubmitted: boolean;
-  submissionReason?: 'completed' | 'timeout' | 'violation';
+  submissionReason?: "completed" | "timeout" | "violation";
 }
 
-export interface TestResult {
-  totalScore: number;
-  maxScore: number;
-  physics: { correct: number; total: number };
-  chemistry: { correct: number; total: number };
-  mathematics: { correct: number; total: number };
-}
+/* ===================== USER DATA ===================== */
 
-// Fisher-Yates shuffle algorithm
-function shuffleArray<T>(array: T[]): T[] {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-}
+export const saveUserData = (data: UserData) => {
+  localStorage.setItem("userData", JSON.stringify(data));
+};
 
-export function generateRandomQuestions(): Question[] {
-  const physicsQuestions = shuffleArray(questionsData.physics)
-    .slice(0, 50)
-    .map((q) => ({ ...q, subject: 'physics' as const }));
-  
-  const chemistryQuestions = shuffleArray(questionsData.chemistry)
-    .slice(0, 50)
-    .map((q) => ({ ...q, subject: 'chemistry' as const }));
-  
-  const mathematicsQuestions = shuffleArray(questionsData.mathematics)
-    .slice(0, 50)
-    .map((q) => ({ ...q, subject: 'mathematics' as const }));
+export const getUserData = (): UserData | null => {
+  const raw = localStorage.getItem("userData");
+  return raw ? JSON.parse(raw) : null;
+};
 
-  return [...physicsQuestions, ...chemistryQuestions, ...mathematicsQuestions];
-}
+/* ===================== STATES / CITIES ===================== */
 
-export function calculateResults(questions: Question[], answers: Record<string, number | null>): TestResult {
-  let physicsCorrect = 0;
-  let chemistryCorrect = 0;
-  let mathematicsCorrect = 0;
-  let physicsTotal = 0;
-  let chemistryTotal = 0;
-  let mathematicsTotal = 0;
+export const states = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+
+  // Union Territories
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry",
+];
+
+export const citiesByState: Record<string, string[]> = {
+  "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool"],
+  "Arunachal Pradesh": ["Itanagar", "Tawang", "Naharlagun"],
+  Assam: ["Guwahati", "Silchar", "Dibrugarh", "Jorhat"],
+  Bihar: ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur"],
+  Chhattisgarh: ["Raipur", "Bilaspur", "Durg", "Korba"],
+  Goa: ["Panaji", "Margao", "Vasco da Gama"],
+  Gujarat: ["Ahmedabad", "Surat", "Vadodara", "Rajkot"],
+  Haryana: ["Gurugram", "Faridabad", "Panipat", "Ambala","Yamunanagar"],
+  "Himachal Pradesh": ["Shimla", "Mandi", "Dharamshala", "Solan"],
+  Jharkhand: ["Ranchi", "Jamshedpur", "Dhanbad"],
+  Karnataka: ["Bengaluru", "Mysuru", "Hubballi", "Mangaluru"],
+  Kerala: ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur"],
+  "Madhya Pradesh": ["Bhopal", "Indore", "Jabalpur", "Gwalior"],
+  Maharashtra: ["Mumbai", "Pune", "Nagpur", "Nashik", "Aurangabad"],
+  Manipur: ["Imphal"],
+  Meghalaya: ["Shillong"],
+  Mizoram: ["Aizawl"],
+  Nagaland: ["Kohima", "Dimapur"],
+  Odisha: ["Bhubaneswar", "Cuttack", "Rourkela"],
+  Punjab: ["Chandigarh", "Ludhiana", "Amritsar", "Jalandhar"],
+  Rajasthan: ["Jaipur", "Jodhpur", "Udaipur", "Kota"],
+  Sikkim: ["Gangtok"],
+  "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Trichy"],
+  Telangana: ["Hyderabad", "Warangal", "Nizamabad"],
+  Tripura: ["Agartala"],
+  "Uttar Pradesh": ["Lucknow", "Kanpur", "Noida", "Varanasi", "Agra"],
+  Uttarakhand: ["Dehradun", "Haridwar", "Roorkee"],
+  "West Bengal": ["Kolkata", "Howrah", "Durgapur", "Siliguri"],
+
+  // Union Territories
+  "Andaman and Nicobar Islands": ["Port Blair"],
+  Chandigarh: ["Chandigarh"],
+  "Dadra and Nagar Haveli and Daman and Diu": ["Daman", "Silvassa"],
+  Delhi: ["New Delhi", "North Delhi", "South Delhi"],
+  "Jammu and Kashmir": ["Srinagar", "Jammu"],
+  Ladakh: ["Leh", "Kargil"],
+  Lakshadweep: ["Kavaratti"],
+  Puducherry: ["Puducherry", "Karaikal"],
+};
+
+
+export const getCitiesForState = (state: string): string[] => {
+  return citiesByState[state] || [];
+};
+
+/* ===================== TEST STATE ===================== */
+
+export const saveTestState = (state: TestState) => {
+  localStorage.setItem("testState", JSON.stringify(state));
+};
+
+export const getTestState = (): TestState | null => {
+  const raw = localStorage.getItem("testState");
+  return raw ? JSON.parse(raw) : null;
+};
+
+/* ===================== RESULTS ===================== */
+
+export const saveTestResult = (result: TestResult) => {
+  localStorage.setItem("testResult", JSON.stringify(result));
+};
+
+export const getTestResult = (): TestResult | null => {
+  const raw = localStorage.getItem("testResult");
+  return raw ? JSON.parse(raw) : null;
+};
+
+export const clearTestData = () => {
+  localStorage.removeItem("testState");
+  localStorage.removeItem("testResult");
+};
+
+/* ===================== CALCULATE RESULT ===================== */
+
+export const calculateResults = (
+  questions: Question[],
+  answers: Record<string, number | null>
+): TestResult => {
+  const result: TestResult = {
+    totalScore: 0,
+    physics: { correct: 0, total: 0 },
+    chemistry: { correct: 0, total: 0 },
+    mathematics: { correct: 0, total: 0 },
+  };
 
   questions.forEach((q) => {
-    const userAnswer = answers[q.id];
-    const isCorrect = userAnswer === q.answer;
+    result[q.subject].total++;
 
-    switch (q.subject) {
-      case 'physics':
-        physicsTotal++;
-        if (isCorrect) physicsCorrect++;
-        break;
-      case 'chemistry':
-        chemistryTotal++;
-        if (isCorrect) chemistryCorrect++;
-        break;
-      case 'mathematics':
-        mathematicsTotal++;
-        if (isCorrect) mathematicsCorrect++;
-        break;
+    if (answers[q.id] === q.correctAnswer) {
+      result[q.subject].correct++;
+      result.totalScore++;
     }
   });
 
-  // Each correct answer is worth 200/150 = 1.33 marks (approximately)
-  // For simplicity, we'll use whole numbers: 150 questions = 200 marks
-  const marksPerQuestion = 1;
-  const totalCorrect = physicsCorrect + chemistryCorrect + mathematicsCorrect;
-  const totalScore = Math.round(totalCorrect * marksPerQuestion);
-
-  return {
-    totalScore,
-    maxScore: 150,
-    physics: { correct: physicsCorrect, total: physicsTotal },
-    chemistry: { correct: chemistryCorrect, total: chemistryTotal },
-    mathematics: { correct: mathematicsCorrect, total: mathematicsTotal },
-  };
-}
-
-// LocalStorage keys
-const STORAGE_KEYS = {
-  USER_DATA: 'cet_user_data',
-  TEST_STATE: 'cet_test_state',
-  TEST_RESULT: 'cet_test_result',
+  return result;
 };
-
-export function saveUserData(data: UserData): void {
-  localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(data));
-}
-
-export function getUserData(): UserData | null {
-  const data = localStorage.getItem(STORAGE_KEYS.USER_DATA);
-  return data ? JSON.parse(data) : null;
-}
-
-export function saveTestState(state: TestState): void {
-  localStorage.setItem(STORAGE_KEYS.TEST_STATE, JSON.stringify(state));
-}
-
-export function getTestState(): TestState | null {
-  const data = localStorage.getItem(STORAGE_KEYS.TEST_STATE);
-  return data ? JSON.parse(data) : null;
-}
-
-export function saveTestResult(result: TestResult): void {
-  localStorage.setItem(STORAGE_KEYS.TEST_RESULT, JSON.stringify(result));
-}
-
-export function getTestResult(): TestResult | null {
-  const data = localStorage.getItem(STORAGE_KEYS.TEST_RESULT);
-  return data ? JSON.parse(data) : null;
-}
-
-export function clearTestData(): void {
-  localStorage.removeItem(STORAGE_KEYS.TEST_STATE);
-  localStorage.removeItem(STORAGE_KEYS.TEST_RESULT);
-}
-
-export function clearAllData(): void {
-  localStorage.removeItem(STORAGE_KEYS.USER_DATA);
-  localStorage.removeItem(STORAGE_KEYS.TEST_STATE);
-  localStorage.removeItem(STORAGE_KEYS.TEST_RESULT);
-}
-
-// Indian states and cities data
-export const statesAndCities: Record<string, string[]> = {
-  'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Thane', 'Nashik', 'Aurangabad'],
-  'Karnataka': ['Bangalore', 'Mysore', 'Hubli', 'Mangalore', 'Belgaum'],
-  'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Salem', 'Tiruchirappalli'],
-  'Gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar'],
-  'Rajasthan': ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Ajmer'],
-  'West Bengal': ['Kolkata', 'Howrah', 'Durgapur', 'Siliguri', 'Asansol'],
-  'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Varanasi', 'Agra', 'Noida', 'Ghaziabad'],
-  'Madhya Pradesh': ['Bhopal', 'Indore', 'Jabalpur', 'Gwalior', 'Ujjain'],
-  'Andhra Pradesh': ['Hyderabad', 'Visakhapatnam', 'Vijayawada', 'Guntur', 'Nellore'],
-  'Telangana': ['Hyderabad', 'Warangal', 'Nizamabad', 'Karimnagar', 'Khammam'],
-  'Kerala': ['Thiruvananthapuram', 'Kochi', 'Kozhikode', 'Thrissur', 'Kollam'],
-  'Delhi': ['New Delhi', 'North Delhi', 'South Delhi', 'East Delhi', 'West Delhi'],
-  'Punjab': ['Chandigarh', 'Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala'],
-  'Haryana': ['Gurgaon', 'Faridabad', 'Panipat', 'Ambala', 'Karnal'],
-  'Bihar': ['Patna', 'Gaya', 'Muzaffarpur', 'Bhagalpur', 'Darbhanga'],
-  'Odisha': ['Bhubaneswar', 'Cuttack', 'Rourkela', 'Brahmapur', 'Sambalpur'],
-  'Jharkhand': ['Ranchi', 'Jamshedpur', 'Dhanbad', 'Bokaro', 'Hazaribagh'],
-  'Chhattisgarh': ['Raipur', 'Bhilai', 'Bilaspur', 'Korba', 'Durg'],
-  'Assam': ['Guwahati', 'Silchar', 'Dibrugarh', 'Jorhat', 'Nagaon'],
-  'Uttarakhand': ['Dehradun', 'Haridwar', 'Roorkee', 'Haldwani', 'Rishikesh'],
-};
-
-export const states = Object.keys(statesAndCities);
-
-export function getCitiesForState(state: string): string[] {
-  return statesAndCities[state] || [];
-}
