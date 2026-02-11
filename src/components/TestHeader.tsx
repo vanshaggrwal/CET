@@ -62,7 +62,6 @@ const TestHeader = ({
           </div>
           <span className="text-lg font-semibold">CET Mock Test</span>
         </div>
-
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 bg-muted px-4 py-2 rounded-lg">
             <Clock className="h-5 w-5" />
@@ -70,7 +69,6 @@ const TestHeader = ({
               {formatTime(timeLeft)}
             </span>
           </div>
-
           <Button variant="destructive" onClick={onManualSubmit}>
             Submit Test
           </Button>

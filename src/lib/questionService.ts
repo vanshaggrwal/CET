@@ -1,44 +1,38 @@
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  startAfter,
+  QueryDocumentSnapshot,
+} from "firebase/firestore";
 import { db } from "../../firebase";
-import { Question } from "./testUtils";
 
-const shuffle = <T>(arr: T[]) => [...arr].sort(() => Math.random() - 0.5);
+const PAGE_SIZE = 1;
 
-export const fetchExamQuestionsFromFirestore = async (): Promise<Question[]> => {
-  const orderedQuestions: Question[] = [];
+export const fetchQuestionsPaginated = async (
+  lastDoc: QueryDocumentSnapshot | null
+) => {
+  const questionsRef = collection(db, "questions");
 
-  const subjects: Question["subject"][] = [
-    "physics",
-    "chemistry",
-    "mathematics",
-  ];
+  const q = lastDoc
+    ? query(
+        questionsRef,
+        orderBy("createdAt", "desc"),
+        startAfter(lastDoc),
+        limit(PAGE_SIZE)
+      )
+    : query(questionsRef, orderBy("createdAt", "desc"), limit(PAGE_SIZE));
 
-  for (const subject of subjects) {
-    const q = query(
-      collection(db, "questions"),
-      where("subject", "==", subject)
-    );
+  const snap = await getDocs(q);
 
-    const snap = await getDocs(q);
-
-    const subjectQuestions: Question[] = snap.docs.map((doc) => {
-      const data = doc.data();
-
-      return {
-        id: doc.id,
-        question: data.question,
-        options: data.options,
-        correctAnswer: data.correctAnswer,
-        subject: data.subject,
-      };
-    });
-
-    // ✅ shuffle only within subject
-    const random50 = shuffle(subjectQuestions).slice(0, 50);
-
-    // ✅ append in subject order
-    orderedQuestions.push(...random50);
-  }
-
-  return orderedQuestions; // ❗ NO final shuffle
+  return {
+    questions: snap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })),
+    lastDoc: snap.docs[snap.docs.length - 1] || null,
+    hasMore: snap.docs.length === PAGE_SIZE,
+  };
 };

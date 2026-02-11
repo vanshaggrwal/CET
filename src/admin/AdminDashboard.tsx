@@ -14,8 +14,10 @@ const AdminDashboard = () => {
     });
   }, []);
 
+
   /* ====== STATS ====== */
   const totalStudents = students.length;
+
 
   const scores = students
     .map((s) => s.latestResult?.totalScore)
