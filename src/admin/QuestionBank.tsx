@@ -2,15 +2,17 @@ import { useEffect, useState } from "react";
 import {
   addDoc,
   collection,
-  getDocs,
   updateDoc,
   deleteDoc,
   doc,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../../firebase";
-import * as XLSX from "xlsx";
-import mammoth from "mammoth";
+
+import {
+  fetchQuestionsPaginated,
+  getQuestionsCount,
+} from "@/lib/questionService";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-/* ===================== TYPES ===================== */
+/* ================= TYPES ================= */
 
 type QuestionForm = {
   question: string;
@@ -38,34 +40,66 @@ const EMPTY_FORM: QuestionForm = {
   subject: "physics",
 };
 
-/* ===================== COMPONENT ===================== */
+const PAGE_SIZE = 10;
 
 const QuestionBank = () => {
   const [questions, setQuestions] = useState<any[]>([]);
   const [form, setForm] = useState<QuestionForm>(EMPTY_FORM);
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  /* ===== PAGINATION STATES ===== */
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageCursors, setPageCursors] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  /* ===================== LOAD QUESTIONS ===================== */
-
-  const loadQuestions = async () => {
-    const snap = await getDocs(collection(db, "questions"));
-    setQuestions(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-  };
+  /* ================= INITIAL LOAD ================= */
 
   useEffect(() => {
-    loadQuestions();
+    const init = async () => {
+      const total = await getQuestionsCount();
+      setTotalPages(Math.ceil(total / PAGE_SIZE));
+      await loadPage(1);
+    };
+
+    init();
   }, []);
 
-  /* ===================== ADD / UPDATE ===================== */
+  /* ================= LOAD PAGE ================= */
+
+  const loadPage = async (pageNumber: number) => {
+    try {
+      setLoading(true);
+
+      let cursor = null;
+
+      if (pageNumber > 1 && pageCursors[pageNumber - 2]) {
+        cursor = pageCursors[pageNumber - 2];
+      }
+
+      const res = await fetchQuestionsPaginated(cursor);
+
+      setQuestions(res.questions);
+
+      const updatedCursors = [...pageCursors];
+      updatedCursors[pageNumber - 1] = res.lastDoc;
+
+      setPageCursors(updatedCursors);
+      setCurrentPage(pageNumber);
+    } catch (error) {
+      console.error("Pagination error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ================= SAVE ================= */
 
   const handleSave = async () => {
     if (!form.question.trim()) {
       alert("Question text is required");
       return;
     }
-
-    setLoading(true);
 
     if (editingId) {
       await updateDoc(doc(db, "questions", editingId), form);
@@ -78,8 +112,7 @@ const QuestionBank = () => {
 
     setForm(EMPTY_FORM);
     setEditingId(null);
-    setLoading(false);
-    loadQuestions();
+    loadPage(currentPage);
   };
 
   const handleEdit = (q: any) => {
@@ -95,196 +128,16 @@ const QuestionBank = () => {
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this question?")) return;
     await deleteDoc(doc(db, "questions", id));
-    loadQuestions();
+    loadPage(currentPage);
   };
 
-  /* ===================== EXCEL UPLOAD ===================== */
-
-  const handleExcelUpload = async (e: any) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const buffer = await file.arrayBuffer();
-    const workbook = XLSX.read(buffer);
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows: any[] = XLSX.utils.sheet_to_json(sheet);
-
-    for (const row of rows) {
-      if (
-        !row.question ||
-        !row.option1 ||
-        !row.option2 ||
-        !row.option3 ||
-        !row.option4
-      )
-        continue;
-
-      await addDoc(collection(db, "questions"), {
-        question: row.question,
-        options: [
-          row.option1,
-          row.option2,
-          row.option3,
-          row.option4,
-        ],
-        correctAnswer: Number(row.correctAnswer),
-        subject: row.subject,
-        createdAt: serverTimestamp(),
-      });
-    }
-
-    alert("Excel questions uploaded");
-    loadQuestions();
-  };
-
-  /* ===================== JSON UPLOAD ===================== */
-const handleJsonUpload = async (e: any) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  try {
-    const text = await file.text();
-    const data = JSON.parse(text);
-
-    const validSubjects = ["physics", "chemistry", "mathematics"];
-
-    for (const subject of validSubjects) {
-      const questions = data[subject];
-      if (!Array.isArray(questions)) continue;
-
-      for (const q of questions) {
-        if (
-          !q.question ||
-          !q.options ||
-          q.options.length !== 4 ||
-          q.answer === undefined
-        ) {
-          console.warn("Skipped invalid question:", q);
-          continue;
-        }
-
-        await addDoc(collection(db, "questions"), {
-          question: q.question,
-          options: q.options,
-          correctAnswer: Number(q.answer), // 🔑 mapped from `answer`
-          subject,                          // 🔑 derived from key
-          createdAt: serverTimestamp(),
-        });
-      }
-    }
-
-    alert("JSON questions uploaded successfully");
-    loadQuestions();
-  } catch (err) {
-    console.error(err);
-    alert("Invalid JSON file");
-  }
-};
-
-
-  /* ===================== WORD UPLOAD ===================== */
-
-  const handleWordUpload = async (e: any) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const buffer = await file.arrayBuffer();
-    const { value } = await mammoth.extractRawText({
-      arrayBuffer: buffer,
-    });
-
-    /**
-     * Expected Word format:
-     *
-     * Q: Question text
-     * A) Option 1
-     * B) Option 2
-     * C) Option 3
-     * D) Option 4
-     * ANSWER: B
-     * SUBJECT: physics
-     */
-
-    const blocks = value.split("Q:").slice(1);
-
-    for (const block of blocks) {
-      const lines = block
-        .split("\n")
-        .map((l) => l.trim())
-        .filter(Boolean);
-
-      const question = lines[0];
-
-      const options = lines
-        .filter((l) => /^[A-D]\)/.test(l))
-        .map((l) => l.slice(3));
-
-      const answerLine = lines.find((l) =>
-        l.startsWith("ANSWER:")
-      );
-      const subjectLine = lines.find((l) =>
-        l.startsWith("SUBJECT:")
-      );
-
-      if (
-        !question ||
-        options.length !== 4 ||
-        !answerLine ||
-        !subjectLine
-      )
-        continue;
-
-      const correctAnswer =
-        answerLine.replace("ANSWER:", "").trim().charCodeAt(0) - 65;
-
-      const subject = subjectLine
-        .replace("SUBJECT:", "")
-        .trim();
-
-      await addDoc(collection(db, "questions"), {
-        question,
-        options,
-        correctAnswer,
-        subject,
-        createdAt: serverTimestamp(),
-      });
-    }
-
-    alert("Word questions uploaded");
-    loadQuestions();
-  };
-
-  /* ===================== UI ===================== */
+  /* ================= UI ================= */
 
   return (
-    <div>
+    <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">Question Bank</h1>
 
-      {/* BULK UPLOAD */}
-      <div className="flex gap-6 mb-6">
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Bulk Upload (Excel)
-          </label>
-          <input type="file" accept=".xlsx" onChange={handleExcelUpload} />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Bulk Upload (JSON)
-          </label>
-          <input type="file" accept=".json" onChange={handleJsonUpload} />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Bulk Upload (Word)
-          </label>
-          <input type="file" accept=".docx" onChange={handleWordUpload} />
-        </div>
-      </div>
-
-      {/* ADD / EDIT FORM */}
+      {/* FORM */}
       <div className="bg-card border rounded-xl p-6 mb-8">
         <h2 className="font-semibold mb-4">
           {editingId ? "Edit Question" : "Add Question"}
@@ -348,51 +201,100 @@ const handleJsonUpload = async (e: any) => {
             </SelectContent>
           </Select>
 
-          <Button onClick={handleSave} disabled={loading}>
+          <Button onClick={handleSave}>
             {editingId ? "Update" : "Add"}
           </Button>
         </div>
       </div>
 
-      {/* QUESTIONS TABLE */}
+      {/* TABLE */}
       <div className="bg-card border rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-muted">
-            <tr>
-              <th className="p-3 text-left">Question</th>
-              <th className="p-3">Subject</th>
-              <th className="p-3">Correct</th>
-              <th className="p-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {questions.map((q) => (
-              <tr key={q.id} className="border-t">
-                <td className="p-3">{q.question}</td>
-                <td className="p-3 capitalize">{q.subject}</td>
-                <td className="p-3">
-                  Option {q.correctAnswer + 1}
-                </td>
-                <td className="p-3 flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleEdit(q)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDelete(q.id)}
-                  >
-                    Delete
-                  </Button>
-                </td>
+        {loading ? (
+          <div className="p-6 text-center">
+            Loading questions...
+          </div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-muted">
+              <tr>
+                <th className="p-3 text-left">Question</th>
+                <th className="p-3">Subject</th>
+                <th className="p-3">Correct</th>
+                <th className="p-3">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {questions.map((q) => (
+                <tr key={q.id} className="border-t">
+                  <td className="p-3">{q.question}</td>
+                  <td className="p-3 capitalize">
+                    {q.subject}
+                  </td>
+                  <td className="p-3">
+                    Option {q.correctAnswer + 1}
+                  </td>
+                  <td className="p-3 flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEdit(q)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() =>
+                        handleDelete(q.id)
+                      }
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* GOOGLE STYLE PAGINATION */}
+      <div className="flex justify-center gap-2 mt-8 flex-wrap">
+        {Array.from({ length: totalPages }, (_, i) => {
+          const page = i + 1;
+
+          if (
+            page === 1 ||
+            page === totalPages ||
+            (page >= currentPage - 2 &&
+              page <= currentPage + 2)
+          ) {
+            return (
+              <Button
+                key={page}
+                size="sm"
+                variant={
+                  currentPage === page
+                    ? "default"
+                    : "outline"
+                }
+                onClick={() => loadPage(page)}
+              >
+                {page}
+              </Button>
+            );
+          }
+
+          if (
+            page === currentPage - 3 ||
+            page === currentPage + 3
+          ) {
+            return <span key={page}>...</span>;
+          }
+
+          return null;
+        })}
       </div>
     </div>
   );

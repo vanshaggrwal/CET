@@ -13,10 +13,12 @@ export interface Question {
 export interface UserData {
   firstName: string;
   lastName: string;
+  currentCollege: string;
   email: string;
-  mobile: string;
+  phone: string;
   state: string;
   city: string;
+  
 }
 
 export interface SubjectResult {
@@ -26,6 +28,7 @@ export interface SubjectResult {
 
 export interface TestResult {
   totalScore: number;
+  maxScore: number; // ✅ already correct
   physics: SubjectResult;
   chemistry: SubjectResult;
   mathematics: SubjectResult;
@@ -123,8 +126,6 @@ export const citiesByState: Record<string, string[]> = {
   "Uttar Pradesh": ["Lucknow", "Kanpur", "Noida", "Varanasi", "Agra"],
   Uttarakhand: ["Dehradun", "Haridwar", "Roorkee"],
   "West Bengal": ["Kolkata", "Howrah", "Durgapur", "Siliguri"],
-
-  // Union Territories
   "Andaman and Nicobar Islands": ["Port Blair"],
   Chandigarh: ["Chandigarh"],
   "Dadra and Nagar Haveli and Daman and Diu": ["Daman", "Silvassa"],
@@ -134,7 +135,6 @@ export const citiesByState: Record<string, string[]> = {
   Lakshadweep: ["Kavaratti"],
   Puducherry: ["Puducherry", "Karaikal"],
 };
-
 
 export const getCitiesForState = (state: string): string[] => {
   return citiesByState[state] || [];
@@ -173,8 +173,10 @@ export const calculateResults = (
   questions: Question[],
   answers: Record<string, number | null>
 ): TestResult => {
+
   const result: TestResult = {
     totalScore: 0,
+    maxScore: 0, // ✅ ADDED
     physics: { correct: 0, total: 0 },
     chemistry: { correct: 0, total: 0 },
     mathematics: { correct: 0, total: 0 },
@@ -182,6 +184,7 @@ export const calculateResults = (
 
   questions.forEach((q) => {
     result[q.subject].total++;
+    result.maxScore++; // ✅ ADDED
 
     if (answers[q.id] === q.correctAnswer) {
       result[q.subject].correct++;

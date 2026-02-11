@@ -1,23 +1,68 @@
 import { useEffect, useState } from "react";
-import { fetchStudentsWithResults } from "@/lib/adminService";
+import {
+  fetchStudentsPaginated,
+  getStudentsCount,
+} from "@/lib/adminService";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+
+const PAGE_SIZE = 10;
 
 const AdminDashboard = () => {
   const [students, setStudents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageCursors, setPageCursors] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  /* ================= INITIAL LOAD ================= */
 
   useEffect(() => {
-    fetchStudentsWithResults().then((data) => {
-      setStudents(data);
-      setLoading(false);
-    });
+    const init = async () => {
+      try {
+        const total = await getStudentsCount();
+        setTotalPages(Math.ceil(total / PAGE_SIZE));
+        await loadPage(1);
+      } catch (error) {
+        console.error("Init error:", error);
+      }
+    };
+
+    init();
   }, []);
 
+  /* ================= LOAD SPECIFIC PAGE ================= */
 
-  /* ====== STATS ====== */
+  const loadPage = async (pageNumber: number) => {
+    try {
+      setLoading(true);
+
+      let cursor = null;
+
+      if (pageNumber > 1 && pageCursors[pageNumber - 2]) {
+        cursor = pageCursors[pageNumber - 2];
+      }
+
+      const res = await fetchStudentsPaginated(cursor);
+
+      setStudents(res.students);
+
+      const updatedCursors = [...pageCursors];
+      updatedCursors[pageNumber - 1] = res.lastDoc;
+
+      setPageCursors(updatedCursors);
+      setCurrentPage(pageNumber);
+    } catch (error) {
+      console.error("Pagination error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ===================== STATS ===================== */
+
   const totalStudents = students.length;
-
 
   const scores = students
     .map((s) => s.latestResult?.totalScore)
@@ -25,10 +70,15 @@ const AdminDashboard = () => {
 
   const avgScore =
     scores.length > 0
-      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+      ? Math.round(
+          scores.reduce((a, b) => a + b, 0) / scores.length
+        )
       : 0;
 
-  const maxScore = scores.length > 0 ? Math.max(...scores) : 0;
+  const maxScore =
+    scores.length > 0 ? Math.max(...scores) : 0;
+
+  /* ===================== RENDER ===================== */
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -46,21 +96,31 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         <Card>
           <CardContent className="p-6">
-            <p className="text-sm text-muted-foreground">Total Students</p>
-            <h2 className="text-3xl font-bold">{totalStudents}</h2>
+            <p className="text-sm text-muted-foreground">
+              Students On This Page
+            </p>
+            <h2 className="text-3xl font-bold">
+              {totalStudents}
+            </h2>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-6">
-            <p className="text-sm text-muted-foreground">Average Score</p>
-            <h2 className="text-3xl font-bold">{avgScore} / 150</h2>
+            <p className="text-sm text-muted-foreground">
+              Average Score
+            </p>
+            <h2 className="text-3xl font-bold">
+              {avgScore} / 150
+            </h2>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-6">
-            <p className="text-sm text-muted-foreground">Highest Score</p>
+            <p className="text-sm text-muted-foreground">
+              Highest Score
+            </p>
             <h2 className="text-3xl font-bold text-green-600">
               {maxScore} / 150
             </h2>
@@ -70,66 +130,135 @@ const AdminDashboard = () => {
 
       {/* TABLE */}
       <div className="bg-card border rounded-xl overflow-hidden">
-        <div className="p-4 border-b">
-          <h2 className="text-lg font-semibold">Student Results</h2>
-        </div>
-
         {loading ? (
-          <p className="p-6 text-center text-muted-foreground">
-            Loading data...
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="p-4 text-left">Student</th>
-                  <th className="p-4 text-left">Email</th>
-                  <th className="p-4 text-left">State</th>
-                  <th className="p-4 text-center">Total</th>
-                  <th className="p-4 text-center">Physics</th>
-                  <th className="p-4 text-center">Chemistry</th>
-                  <th className="p-4 text-center">Maths</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {students.map((s) => (
-                  <tr
-                    key={s.id}
-                    className="border-t hover:bg-muted/50 transition"
-                  >
-                    <td className="p-4 font-medium">
-                      {s.firstName} {s.lastName}
-                    </td>
-                    <td className="p-4">{s.email}</td>
-                    <td className="p-4">{s.state}</td>
-
-                    <td className="p-4 text-center">
-                      {s.latestResult ? (
-                        <Badge variant="default">
-                          {s.latestResult.totalScore}
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary">Not Attempted</Badge>
-                      )}
-                    </td>
-
-                    <td className="p-4 text-center">
-                      {s.latestResult?.physics ?? "—"}
-                    </td>
-                    <td className="p-4 text-center">
-                      {s.latestResult?.chemistry ?? "—"}
-                    </td>
-                    <td className="p-4 text-center">
-                      {s.latestResult?.mathematics ?? "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="p-6 text-center">
+            Loading students...
           </div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-muted">
+              <tr>
+                <th className="p-4 text-left">
+                  Student
+                </th>
+                <th className="p-4 text-left">
+                  Email
+                </th>
+                <th className="p-4 text-left">
+                  State
+                </th>
+                <th className="p-4 text-center">
+                  Total
+                </th>
+                <th className="p-4 text-center">
+                  Physics
+                </th>
+                <th className="p-4 text-center">
+                  Chemistry
+                </th>
+                <th className="p-4 text-center">
+                  Maths
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {students.map((s) => (
+                <tr
+                  key={s.id}
+                  className="border-t hover:bg-muted/50 transition"
+                >
+                  <td className="p-4 font-medium">
+                    {s.firstName} {s.lastName}
+                  </td>
+
+                  <td className="p-4">
+                    {s.email}
+                  </td>
+
+                  <td className="p-4">
+                    {s.state}
+                  </td>
+
+                  {/* TOTAL */}
+                  <td className="p-4 text-center">
+                    {s.latestResult ? (
+                      <Badge variant="default">
+                        {s.latestResult.totalScore}
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary">
+                        Not Attempted
+                      </Badge>
+                    )}
+                  </td>
+
+                  {/* PHYSICS */}
+                  <td className="p-4 text-center">
+                    {s.latestResult?.physics ??
+                      "—"}
+                  </td>
+
+                  {/* CHEMISTRY */}
+                  <td className="p-4 text-center">
+                    {s.latestResult?.chemistry ??
+                      "—"}
+                  </td>
+
+                  {/* MATHEMATICS */}
+                  <td className="p-4 text-center">
+                    {s.latestResult?.mathematics ??
+                      "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
+      </div>
+
+      {/* GOOGLE STYLE PAGINATION */}
+      <div className="flex justify-center gap-2 mt-8 flex-wrap">
+        {Array.from({ length: totalPages }, (_, i) => {
+          const page = i + 1;
+
+          if (
+            page === 1 ||
+            page === totalPages ||
+            (page >= currentPage - 2 &&
+              page <= currentPage + 2)
+          ) {
+            return (
+              <Button
+                key={page}
+                size="sm"
+                variant={
+                  currentPage === page
+                    ? "default"
+                    : "outline"
+                }
+                onClick={() =>
+                  loadPage(page)
+                }
+              >
+                {page}
+              </Button>
+            );
+          }
+
+          if (
+            page === currentPage - 3 ||
+            page === currentPage + 3
+          ) {
+            return (
+              <span key={page}>
+                ...
+              </span>
+            );
+          }
+
+          return null;
+        })}
       </div>
     </div>
   );

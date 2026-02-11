@@ -10,7 +10,6 @@ import {
   calculateResults,
   getUserData,
   TestState,
-  Question,
 } from "@/lib/testUtils";
 import { fetchExamQuestionsFromFirestore } from "@/lib/questionService";
 import { saveResultToFirebase } from "@/lib/resultService";
@@ -25,7 +24,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 
-const TEST_DURATION = 3 * 60 * 60; // 3 hours
+const TEST_DURATION = 3 * 60 * 60; // 3 hours in seconds
 
 const subjectOrder: Record<string, number> = {
   physics: 1,
@@ -40,19 +39,20 @@ const Exam = () => {
   const [showViolationDialog, setShowViolationDialog] = useState(false);
   const isSubmittingRef = useRef(false);
 
-  const userData = getUserData();
-
   /* ================= INIT TEST ================= */
 
   useEffect(() => {
-    if (!userData) {
-      navigate("/mock-test/register");
-      return;
-    }
-
     const initTest = async () => {
+      const user = getUserData();
+
+      if (!user) {
+        navigate("/mock-test/register");
+        return;
+      }
+
       const saved = getTestState();
 
+      // Resume test if not submitted
       if (saved && !saved.isSubmitted) {
         setTestState(saved);
         return;
@@ -60,7 +60,6 @@ const Exam = () => {
 
       const fetched = await fetchExamQuestionsFromFirestore();
 
-      // 🔒 HARD GUARANTEE SUBJECT ORDER
       const ordered = [...fetched].sort(
         (a, b) => subjectOrder[a.subject] - subjectOrder[b.subject]
       );
@@ -81,13 +80,16 @@ const Exam = () => {
     };
 
     initTest();
-  }, [navigate, userData]);
+  }, [navigate]);
 
   /* ================= SUBMIT ================= */
 
   const submitTest = useCallback(
     async (reason: "completed" | "timeout" | "violation") => {
-      if (!testState || !userData || isSubmittingRef.current) return;
+      const user = getUserData();
+
+      if (!testState || !user || isSubmittingRef.current) return;
+
       isSubmittingRef.current = true;
 
       const finalState: TestState = {
@@ -104,11 +106,11 @@ const Exam = () => {
       );
 
       saveTestResult(result);
-      await saveResultToFirebase(userData.email, result);
+      await saveResultToFirebase(user.email, result);
 
       navigate("/mock-test/results");
     },
-    [testState, userData, navigate]
+    [testState, navigate]
   );
 
   /* ================= SAFETY ================= */
@@ -117,24 +119,34 @@ const Exam = () => {
     if (!testState || testState.isSubmitted) return;
 
     const violation = () => {
-      if (!isSubmittingRef.current) setShowViolationDialog(true);
+      if (!isSubmittingRef.current) {
+        setShowViolationDialog(true);
+      }
     };
 
-    document.addEventListener("visibilitychange", () => {
+    const handleVisibility = () => {
       if (document.hidden) violation();
-    });
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
     window.addEventListener("blur", violation);
 
     return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("blur", violation);
     };
   }, [testState]);
 
   if (!testState || testState.questions.length === 0) {
-    return <div className="min-h-screen flex items-center justify-center">Loading exam…</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading exam…
+      </div>
+    );
   }
 
-  const currentQuestion = testState.questions[testState.currentQuestion];
+  const currentQuestion =
+    testState.questions[testState.currentQuestion];
 
   /* ================= HELPERS ================= */
 
@@ -175,10 +187,17 @@ const Exam = () => {
             totalQuestions={testState.questions.length}
             selectedAnswer={testState.answers[currentQuestion.id]}
             onAnswerChange={handleAnswerChange}
-            onPrevious={() => goToQuestion(testState.currentQuestion - 1)}
-            onNext={() => goToQuestion(testState.currentQuestion + 1)}
+            onPrevious={() =>
+              goToQuestion(testState.currentQuestion - 1)
+            }
+            onNext={() =>
+              goToQuestion(testState.currentQuestion + 1)
+            }
             canGoPrevious={testState.currentQuestion > 0}
-            canGoNext={testState.currentQuestion < testState.questions.length - 1}
+            canGoNext={
+              testState.currentQuestion <
+              testState.questions.length - 1
+            }
           />
         </div>
 
@@ -191,7 +210,10 @@ const Exam = () => {
       </div>
 
       {/* SUBMIT CONFIRM */}
-      <AlertDialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
+      <AlertDialog
+        open={showSubmitDialog}
+        onOpenChange={setShowSubmitDialog}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Submit Test?</AlertDialogTitle>
@@ -201,7 +223,9 @@ const Exam = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Continue Test</AlertDialogCancel>
-            <AlertDialogAction onClick={() => submitTest("completed")}>
+            <AlertDialogAction
+              onClick={() => submitTest("completed")}
+            >
               Submit Test
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -220,7 +244,9 @@ const Exam = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => submitTest("violation")}>
+            <AlertDialogAction
+              onClick={() => submitTest("violation")}
+            >
               View Result
             </AlertDialogAction>
           </AlertDialogFooter>

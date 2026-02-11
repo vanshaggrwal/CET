@@ -39,8 +39,9 @@ const Registration = () => {
 
   /* ================= VALIDATIONS ================= */
 
-  const validateEmail = (email: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (email: string): boolean => {
+  return /^[A-Za-z0-9]+([._%+-]?[A-Za-z0-9]+)*@[A-Za-z0-9-]+\.[A-Za-z]{2,}$/.test(email.trim());
+};
 
   const validatePhone = (phone: string) =>
     /^[0-9]{10}$/.test(phone);

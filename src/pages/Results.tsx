@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import emailjs from "@emailjs/browser";
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +22,8 @@ import {
 
 const Results = () => {
   const navigate = useNavigate();
+  const hasSentRef = useRef(false);
+
   const result = getTestResult();
   const userData = getUserData();
   const testState = getTestState();
@@ -28,6 +31,12 @@ const Results = () => {
   useEffect(() => {
     if (!result || !userData) {
       navigate('/mock-test');
+      return;
+    }
+
+    if (!hasSentRef.current) {
+      sendResultEmail();
+      hasSentRef.current = true;
     }
   }, [result, userData, navigate]);
 
@@ -36,6 +45,10 @@ const Results = () => {
   }
 
   const getScorePercentage = () => {
+    const maxScore =
+    result.physics.total +
+    result.chemistry.total +
+    result.mathematics.total;
     return Math.round((result.totalScore / result.maxScore) * 100);
   };
 
@@ -55,6 +68,44 @@ const Results = () => {
     return 'text-destructive';
   };
 
+  const sendResultEmail = async () => {
+    try {
+      const response = await fetch("/brochure.pdf");
+      const blob = await response.blob();
+
+      const base64File = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = () => {
+          if (typeof reader.result === "string") {
+            resolve(reader.result.split(",")[1]);
+          }
+        };
+      });
+
+      await emailjs.send(
+        "service_j8b5xai",
+        "template_5i20hxp",
+        {
+          student_name: `${userData.firstName} ${userData.lastName}`,
+          score: result.totalScore,
+          max_score: result.maxScore,
+          percentage: getScorePercentage(),
+          physics: `${result.physics.correct}/${result.physics.total}`,
+          chemistry: `${result.chemistry.correct}/${result.chemistry.total}`,
+          mathematics: `${result.mathematics.correct}/${result.mathematics.total}`,
+          to_email: userData.email,
+          attachment: base64File,
+        },
+        "brb9ovJREI08B_ypW"
+      );
+
+      console.log("Email sent successfully");
+    } catch (error) {
+      console.error("Email failed:", error);
+    }
+  };
+
   const handleRetakeTest = () => {
     clearTestData();
     navigate('/mock-test/register');
@@ -68,7 +119,7 @@ const Results = () => {
 
       <div className="container py-12">
         <div className="max-w-3xl mx-auto">
-          {/* Submission reason alert */}
+
           {submissionReason === 'violation' && (
             <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-center">
               <p className="text-destructive font-medium">
@@ -76,6 +127,7 @@ const Results = () => {
               </p>
             </div>
           )}
+
           {submissionReason === 'timeout' && (
             <div className="mb-6 p-4 rounded-lg bg-warning/10 border border-warning/30 text-center">
               <p className="text-warning font-medium">
@@ -84,7 +136,6 @@ const Results = () => {
             </div>
           )}
 
-          {/* Main Score Card */}
           <Card className="border-2 border-primary/20 shadow-lg mb-8">
             <CardHeader className="text-center pb-4">
               <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
@@ -97,6 +148,7 @@ const Results = () => {
                 {userData.firstName} {userData.lastName}
               </p>
             </CardHeader>
+
             <CardContent>
               <div className="text-center mb-8">
                 <p className={`text-6xl font-bold ${getScoreColor()}`}>
@@ -110,7 +162,6 @@ const Results = () => {
                 </p>
               </div>
 
-              {/* Subject-wise breakdown */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 rounded-lg bg-muted text-center">
                   <div className="flex items-center justify-center gap-2 mb-2">
@@ -120,8 +171,8 @@ const Results = () => {
                   <p className="text-2xl font-bold text-foreground">
                     {result.physics.correct}/{result.physics.total}
                   </p>
-                  <p className="text-sm text-muted-foreground">correct answers</p>
                 </div>
+
                 <div className="p-4 rounded-lg bg-muted text-center">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <Beaker className="h-5 w-5 text-success" />
@@ -130,8 +181,8 @@ const Results = () => {
                   <p className="text-2xl font-bold text-foreground">
                     {result.chemistry.correct}/{result.chemistry.total}
                   </p>
-                  <p className="text-sm text-muted-foreground">correct answers</p>
                 </div>
+
                 <div className="p-4 rounded-lg bg-muted text-center">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <Calculator className="h-5 w-5 text-mathematics" />
@@ -140,13 +191,11 @@ const Results = () => {
                   <p className="text-2xl font-bold text-foreground">
                     {result.mathematics.correct}/{result.mathematics.total}
                   </p>
-                  <p className="text-sm text-muted-foreground">correct answers</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Email Confirmation */}
           <Card className="mb-8 bg-primary/5 border-primary/20">
             <CardContent className="py-6">
               <div className="flex items-center gap-4">
@@ -158,14 +207,13 @@ const Results = () => {
                     Check your email for detailed scorecard & brochure
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Your scorecard and college brochure have been sent to {userData.email}
+                    Sent to {userData.email}
                   </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               variant="outline" 
@@ -175,6 +223,7 @@ const Results = () => {
               <RefreshCw className="h-4 w-4" />
               Retake Test
             </Button>
+
             <Link to="/">
               <Button className="gap-2 w-full sm:w-auto">
                 <Home className="h-4 w-4" />
@@ -182,6 +231,7 @@ const Results = () => {
               </Button>
             </Link>
           </div>
+
         </div>
       </div>
     </div>

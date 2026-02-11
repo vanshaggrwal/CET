@@ -153,25 +153,7 @@ const MockTestLanding = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20">
-        <div className="container">
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-foreground mb-4">
-              Ready to Test Your Preparation?
-            </h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              Take the free mock test now and benchmark your CET readiness
-            </p>
-            <Link to="/mock-test/register">
-              <Button size="lg" className="gap-2 text-lg px-8 py-6">
-                Start Mock Test
-                <ArrowRight className="h-5 w-5" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+    
     </div>
   );
 };

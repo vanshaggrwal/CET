@@ -1,39 +1,51 @@
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  startAfter,
+  QueryDocumentSnapshot,
+} from "firebase/firestore";
 import { db } from "../../firebase";
-import { collection, query, orderBy, getDocs ,limit,startAfter,} from "firebase/firestore";
-export const fetchStudentsPaginated = async (lastDoc)=>{
+import { getCountFromServer } from "firebase/firestore";
+
+export const getStudentsCount = async () => {
+  const coll = collection(db, "students");
+  const snapshot = await getCountFromServer(coll);
+  return snapshot.data().count;
+};
+
+const PAGE_SIZE = 10; // number of students per page
+export const fetchStudentsPaginated = async (
+  lastDoc: QueryDocumentSnapshot | null
+) => {
   const studentsRef = collection(db, "students");
-  let q;
-  if (lastDoc) {
-    q = query(
-      studentsRef,
-      orderBy("createdAt", "desc"),
-      startAfter(lastDoc),
-      limit(20)
-    );
-  } else {
-    q = query(studentsRef, orderBy("createdAt", "desc"), limit(20));
-  }
+
+  const q = lastDoc
+    ? query(
+        studentsRef,
+        orderBy("createdAt", "desc"),
+        startAfter(lastDoc),
+        limit(PAGE_SIZE)
+      )
+    : query(
+        studentsRef,
+        orderBy("createdAt", "desc"),
+        limit(PAGE_SIZE)
+      );
+
   const snap = await getDocs(q);
+
   return {
     students: snap.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     })),
-    lastDoc: snap.docs[snap.docs.length - 1] || null,
-    hasMore: snap.docs.length === 20,
+    lastDoc:
+      snap.docs.length > 0
+        ? snap.docs[snap.docs.length - 1]
+        : null,
+    hasMore: snap.docs.length === PAGE_SIZE,
   };
-}
-
-
-export const fetchStudentsWithResults = async () => {
-  const q = query(
-    collection(db, "students"),
-    orderBy("createdAt", "desc")
-  );
-
-  const snap = await getDocs(q);
-  return snap.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
 };
