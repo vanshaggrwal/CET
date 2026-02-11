@@ -47,7 +47,6 @@ const QuestionBank = () => {
   const [form, setForm] = useState<QuestionForm>(EMPTY_FORM);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  /* ===== PAGINATION STATES ===== */
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageCursors, setPageCursors] = useState<any[]>([]);
@@ -112,7 +111,8 @@ const QuestionBank = () => {
 
     setForm(EMPTY_FORM);
     setEditingId(null);
-    loadPage(currentPage);
+
+    await loadPage(currentPage);
   };
 
   const handleEdit = (q: any) => {
@@ -127,8 +127,10 @@ const QuestionBank = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this question?")) return;
+
     await deleteDoc(doc(db, "questions", id));
-    loadPage(currentPage);
+
+    await loadPage(currentPage);
   };
 
   /* ================= UI ================= */
@@ -245,9 +247,7 @@ const QuestionBank = () => {
                     <Button
                       size="sm"
                       variant="destructive"
-                      onClick={() =>
-                        handleDelete(q.id)
-                      }
+                      onClick={() => handleDelete(q.id)}
                     >
                       Delete
                     </Button>

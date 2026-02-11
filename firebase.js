@@ -10,7 +10,7 @@ import { getAuth } from "firebase/auth";
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCDY77TBrkXZfjUYUPI4QqBsLLx9Q8KEQY",
-  authDomain: "mhtcet-101f8.firebaseapp.com",
+  authDomain: "n",
   projectId: "mhtcet-101f8",
   storageBucket: "mhtcet-101f8.firebasestorage.app",
   messagingSenderId: "897413625764",

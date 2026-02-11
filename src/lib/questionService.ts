@@ -11,7 +11,10 @@ import {
 import { db } from "../../firebase";
 
 const PAGE_SIZE = 10;
-/* ================= FETCH EXAM QUESTIONS ================= */
+
+/* =========================================================
+   FETCH 50 RANDOM QUESTIONS PER SUBJECT FOR EXAM
+========================================================= */
 
 export const fetchExamQuestionsFromFirestore = async () => {
   const questionsRef = collection(db, "questions");
@@ -21,22 +24,22 @@ export const fetchExamQuestionsFromFirestore = async () => {
   const allQuestions = snap.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
-  }));
+  })) as any[];
 
-  // Group by subject
   const physics = allQuestions.filter(
-    (q: any) => q.subject === "physics"
-  );
-  const chemistry = allQuestions.filter(
-    (q: any) => q.subject === "chemistry"
-  );
-  const mathematics = allQuestions.filter(
-    (q: any) => q.subject === "mathematics"
+    (q) => q.subject === "physics"
   );
 
-  // Shuffle helper
+  const chemistry = allQuestions.filter(
+    (q) => q.subject === "chemistry"
+  );
+
+  const mathematics = allQuestions.filter(
+    (q) => q.subject === "mathematics"
+  );
+
   const shuffle = (arr: any[]) =>
-    arr.sort(() => 0.5 - Math.random());
+    [...arr].sort(() => 0.5 - Math.random());
 
   return [
     ...shuffle(physics).slice(0, 50),
@@ -45,7 +48,9 @@ export const fetchExamQuestionsFromFirestore = async () => {
   ];
 };
 
-/* ================= PAGINATED FETCH ================= */
+/* =========================================================
+   PAGINATION FOR ADMIN QUESTION BANK
+========================================================= */
 
 export const fetchQuestionsPaginated = async (
   lastDoc: QueryDocumentSnapshot | null
@@ -55,13 +60,13 @@ export const fetchQuestionsPaginated = async (
   const q = lastDoc
     ? query(
         questionsRef,
-        orderBy("createdAt", "desc"),
+        orderBy("__name__"), // safest ordering
         startAfter(lastDoc),
         limit(PAGE_SIZE)
       )
     : query(
         questionsRef,
-        orderBy("createdAt", "desc"),
+        orderBy("__name__"),
         limit(PAGE_SIZE)
       );
 
@@ -79,7 +84,9 @@ export const fetchQuestionsPaginated = async (
   };
 };
 
-/* ================= TOTAL COUNT ================= */
+/* =========================================================
+   TOTAL QUESTIONS COUNT
+========================================================= */
 
 export const getQuestionsCount = async () => {
   const coll = collection(db, "questions");
