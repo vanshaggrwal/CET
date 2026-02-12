@@ -7,14 +7,15 @@ interface TestHeaderProps {
   totalDuration: number;
   onAutoSubmit: () => void;
   onManualSubmit: () => void;
+  isFullExam?: boolean;
 }
-
 
 const TestHeader = ({
   startTime,
   totalDuration,
   onAutoSubmit,
   onManualSubmit,
+  isFullExam = false,
 }: TestHeaderProps) => {
   const [timeLeft, setTimeLeft] = useState(totalDuration);
   const intervalRef = useRef<number | null>(null);
@@ -33,10 +34,11 @@ const TestHeader = ({
         onAutoSubmit();
       }
     }, 1000);
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [startTime, totalDuration]); // 🔥 no onAutoSubmit dependency
+  }, [startTime, totalDuration, onAutoSubmit]);
 
   const formatTime = (s: number) => {
     const h = Math.floor(s / 3600);
@@ -53,6 +55,7 @@ const TestHeader = ({
       : timeLeft > 600
       ? "text-yellow-600"
       : "text-red-600";
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">
       <div className="container flex h-16 items-center justify-between">
@@ -60,8 +63,11 @@ const TestHeader = ({
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <GraduationCap className="h-5 w-5" />
           </div>
-          <span className="text-lg font-semibold">CET Mock Test</span>
+          <span className="text-lg font-semibold">
+            CET Mock Test
+          </span>
         </div>
+
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 bg-muted px-4 py-2 rounded-lg">
             <Clock className="h-5 w-5" />
@@ -69,7 +75,16 @@ const TestHeader = ({
               {formatTime(timeLeft)}
             </span>
           </div>
-          <Button variant="destructive" onClick={onManualSubmit}>
+
+          <Button
+            variant={isFullExam ? "default" : "destructive"}
+            className={
+              isFullExam
+                ? "bg-green-600 hover:bg-green-700 text-white"
+                : ""
+            }
+            onClick={onManualSubmit}
+          >
             Submit Test
           </Button>
         </div>
@@ -77,4 +92,5 @@ const TestHeader = ({
     </header>
   );
 };
+
 export default TestHeader;

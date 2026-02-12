@@ -24,6 +24,7 @@ export interface UserData {
 export interface SubjectResult {
   correct: number;
   total: number;
+  attempted: number; // ✅ ADDED
 }
 
 export interface TestResult {
@@ -177,20 +178,26 @@ export const calculateResults = (
   const result: TestResult = {
     totalScore: 0,
     maxScore: 0, // ✅ ADDED
-    physics: { correct: 0, total: 0 },
-    chemistry: { correct: 0, total: 0 },
-    mathematics: { correct: 0, total: 0 },
+    physics: { correct: 0, total: 0, attempted: 0 },
+    chemistry: { correct: 0, total: 0, attempted: 0 },
+    mathematics: { correct: 0, total: 0, attempted: 0 },
+ 
   };
+questions.forEach((q) => {
+  result[q.subject].total++;
+  result.maxScore++;
 
-  questions.forEach((q) => {
-    result[q.subject].total++;
-    result.maxScore++; // ✅ ADDED
+  const answer = answers[q.id];
 
-    if (answers[q.id] === q.correctAnswer) {
-      result[q.subject].correct++;
-      result.totalScore++;
-    }
-  });
+  if (answer !== null && answer !== undefined) {
+    result[q.subject].attempted++;
+  }
+
+  if (answer === q.correctAnswer) {
+    result[q.subject].correct++;
+    result.totalScore++;
+  }
+});
 
   return result;
 };

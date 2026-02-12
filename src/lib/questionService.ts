@@ -3,20 +3,21 @@ import {
   getDocs,
   query,
   orderBy,
-  limit,
-  startAfter,
+ 
   getCountFromServer,
+
 } from "firebase/firestore";
 import { db } from "../../firebase";
 
-const PAGE_SIZE = 10;
+const COLLECTION_NAME = "questions";
 
 /* =========================================================
    FETCH 50 RANDOM QUESTIONS PER SUBJECT FOR EXAM
 ========================================================= */
 
 export const fetchExamQuestionsFromFirestore = async () => {
-  const questionsRef = collection(db, "questions");
+  const questionsRef = collection(db, COLLECTION_NAME);
+
   const snap = await getDocs(questionsRef);
 
   const allQuestions = snap.docs.map((doc) => ({
@@ -47,26 +48,30 @@ export const fetchExamQuestionsFromFirestore = async () => {
 };
 
 /* =========================================================
-   PAGINATION (PAGE NUMBER BASED – NO REPEATS)
+   PAGINATION USING DOCUMENT ID (NO DUPLICATES)
 ========================================================= */
+
 export const fetchQuestionsPaginated = async (
-  page: number,
+  pageNumber: number,
   pageSize: number
 ) => {
-  const questionsRef = collection(db, "questions");
+  const questionsRef = collection(db, COLLECTION_NAME);
 
-  const q = query(
+  // Always order by document ID (safe + indexed)
+  const baseQuery = query(
     questionsRef,
-    orderBy("createdAt", "desc"),
-    limit(page * pageSize)
+    orderBy("__name__")
   );
 
-  const snap = await getDocs(q);
+  const snapshot = await getDocs(baseQuery);
 
-  const allDocs = snap.docs;
+  const allDocs = snapshot.docs;
 
-  const startIndex = (page - 1) * pageSize;
-  const paginatedDocs = allDocs.slice(startIndex, startIndex + pageSize);
+  const startIndex = (pageNumber - 1) * pageSize;
+  const paginatedDocs = allDocs.slice(
+    startIndex,
+    startIndex + pageSize
+  );
 
   return {
     questions: paginatedDocs.map((doc) => ({
@@ -76,13 +81,12 @@ export const fetchQuestionsPaginated = async (
   };
 };
 
-
 /* =========================================================
-   TOTAL QUESTIONS COUNT
+   TOTAL COUNT
 ========================================================= */
 
 export const getQuestionsCount = async () => {
-  const coll = collection(db, "questions");
+  const coll = collection(db, COLLECTION_NAME);
   const snapshot = await getCountFromServer(coll);
   return snapshot.data().count;
 };

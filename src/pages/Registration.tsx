@@ -38,13 +38,34 @@ const Registration = () => {
   const [loading, setLoading] = useState(false);
 
   /* ================= VALIDATIONS ================= */
+ 
 
-  const validateEmail = (email: string): boolean => {
-  return /^[A-Za-z0-9]+([._%+-]?[A-Za-z0-9]+)*@[A-Za-z0-9-]+\.[A-Za-z]{2,}$/.test(email.trim());
+  const validateEmail = (email: string) => {
+  const emailRegex =
+    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  if (!emailRegex.test(email)) {
+    return "Invalid email format";
+  }
+
+  const domain = email.split("@")[1];
+
+  const blockedDomains = [
+    "test.com",
+    "example.com",
+    "dummy.com",
+  ];
+
+  if (blockedDomains.includes(domain.toLowerCase())) {
+    return "Dummy email domains are not allowed";
+  }
+
+  return null;
 };
 
-  const validatePhone = (phone: string) =>
-    /^[0-9]{10}$/.test(phone);
+const validatePhone = (phone: string) =>
+  /^[6-9][0-9]{9}$/.test(phone);
+
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -144,11 +165,14 @@ const Registration = () => {
                 <div>
                   <Label>First Name *</Label>
                   <Input
-                    value={formData.firstName}
-                    onChange={(e) =>
-                      handleChange("firstName", e.target.value)
-                    }
-                  />
+  value={formData.firstName}
+  onChange={(e) =>
+    handleChange(
+      "firstName",
+      e.target.value.replace(/[^A-Za-z ]/g, "")
+    )
+  }
+/>
                   {errors.firstName && (
                     <p className="text-sm text-destructive">
                       {errors.firstName}
@@ -158,12 +182,16 @@ const Registration = () => {
 
                 <div>
                   <Label>Last Name *</Label>
+                  
                   <Input
-                    value={formData.lastName}
-                    onChange={(e) =>
-                      handleChange("lastName", e.target.value)
-                    }
-                  />
+  value={formData.lastName}
+  onChange={(e) =>
+    handleChange(
+      "lastName",
+      e.target.value.replace(/[^A-Za-z ]/g, "")
+    )
+  }
+/>
                   {errors.lastName && (
                     <p className="text-sm text-destructive">
                       {errors.lastName}
@@ -175,12 +203,16 @@ const Registration = () => {
               {/* College */}
               <div>
                 <Label>Current College *</Label>
+                
                 <Input
-                  value={formData.currentCollege}
-                  onChange={(e) =>
-                    handleChange("currentCollege", e.target.value)
-                  }
-                />
+  value={formData.currentCollege}
+  onChange={(e) =>
+    handleChange(
+      "currentCollege",
+      e.target.value.replace(/[^A-Za-z ]/g, "")
+    )
+  }
+/>
                 {errors.currentCollege && (
                   <p className="text-sm text-destructive">
                     {errors.currentCollege}
@@ -262,24 +294,37 @@ const Registration = () => {
               </div>
 
               {/* Phone */}
-              <div>
-                <Label>Phone *</Label>
-                <Input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    handleChange(
-                      "phone",
-                      e.target.value.replace(/\D/g, "").slice(0, 10)
-                    )
-                  }
-                />
-                {errors.phone && (
-                  <p className="text-sm text-destructive">
-                    {errors.phone}
-                  </p>
-                )}
-              </div>
+             <div>
+  <Label>Phone *</Label>
+
+  <div className="flex items-center mt-1">
+    {/* +91 Prefix */}
+    <div className="px-3 py-2 bg-muted border border-r-0 rounded-l-md text-sm">
+      +91
+    </div>
+
+    {/* Phone Input */}
+    <Input
+      type="tel"
+      value={formData.phone}
+      onChange={(e) =>
+        handleChange(
+          "phone",
+          e.target.value.replace(/\D/g, "").slice(0, 10)
+        )
+      }
+      className="rounded-l-none"
+      placeholder="Enter 10-digit number"
+    />
+  </div>
+
+  {errors.phone && (
+    <p className="text-sm text-destructive mt-1">
+      {errors.phone}
+    </p>
+  )}
+</div>
+
 
               <Button
                 type="submit"

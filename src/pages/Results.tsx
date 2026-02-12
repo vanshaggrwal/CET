@@ -169,7 +169,9 @@ const Results = () => {
                     <span className="font-medium text-foreground">Physics</span>
                   </div>
                   <p className="text-2xl font-bold text-foreground">
-                    {result.physics.correct}/{result.physics.total}
+                    {result.physics.correct}/{result.physics.total} <br/></p>
+                  <p className="text-xs font-bold text-foreground">
+                    Attempted: {result.chemistry.attempted}
                   </p>
                 </div>
 
@@ -180,6 +182,9 @@ const Results = () => {
                   </div>
                   <p className="text-2xl font-bold text-foreground">
                     {result.chemistry.correct}/{result.chemistry.total}
+                    <br/></p>
+                     <p className="text-xs font-bold text-foreground">
+                    Attempted: {result.chemistry.attempted}
                   </p>
                 </div>
 
@@ -189,7 +194,9 @@ const Results = () => {
                     <span className="font-medium text-foreground">Mathematics</span>
                   </div>
                   <p className="text-2xl font-bold text-foreground">
-                    {result.mathematics.correct}/{result.mathematics.total}
+                    {result.mathematics.correct}/{result.mathematics.total}<br/></p>
+                    <p className="text-xs font-bold text-foreground">
+                    Attempted: {result.chemistry.attempted}
                   </p>
                 </div>
               </div>

@@ -289,45 +289,68 @@ const QuestionBank = () => {
         ))}
 
         <div className="flex gap-4 mt-4">
-          <Select
-            value={form.subject}
-            onValueChange={(v) =>
-              setForm({ ...form, subject: v as any })
-            }
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="physics">Physics</SelectItem>
-              <SelectItem value="chemistry">Chemistry</SelectItem>
-              <SelectItem value="mathematics">
-                Mathematics
-              </SelectItem>
-            </SelectContent>
-          </Select>
+         <div className="flex gap-6 mt-4">
 
-          <Select
-            value={String(form.correctAnswer)}
-            onValueChange={(v) =>
-              setForm({ ...form, correctAnswer: Number(v) })
-            }
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {[0, 1, 2, 3].map((i) => (
-                <SelectItem key={i} value={String(i)}>
-                  Option {i + 1}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+  {/* SUBJECT SELECT */}
+  <div className="flex flex-col gap-1">
+    <label className="text-sm font-medium text-muted-foreground">
+      Subject
+    </label>
 
-          <Button onClick={handleSave}>
-            {editingId ? "Update" : "Add"}
-          </Button>
+    <Select
+      value={form.subject}
+      onValueChange={(v) =>
+        setForm({ ...form, subject: v as any })
+      }
+    >
+      <SelectTrigger className="w-44">
+        <SelectValue placeholder="Select Subject" />
+      </SelectTrigger>
+
+      <SelectContent>
+        <SelectItem value="physics">Physics</SelectItem>
+        <SelectItem value="chemistry">Chemistry</SelectItem>
+        <SelectItem value="mathematics">
+          Mathematics
+        </SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+
+  {/* CORRECT OPTION SELECT */}
+  <div className="flex flex-col gap-1">
+    <label className="text-sm font-medium text-muted-foreground">
+      Correct Option
+    </label>
+
+    <Select
+      value={String(form.correctAnswer)}
+      onValueChange={(v) =>
+        setForm({ ...form, correctAnswer: Number(v) })
+      }
+    >
+      <SelectTrigger className="w-44">
+        <SelectValue placeholder="Select Correct Option" />
+      </SelectTrigger>
+
+      <SelectContent>
+        {[0, 1, 2, 3].map((i) => (
+          <SelectItem key={i} value={String(i)}>
+            Option {i + 1}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+
+</div>
+
+
+          <div className="mt-9">
+  <Button onClick={handleSave}>
+    {editingId ? "Update" : "Add"}
+  </Button>
+</div>
         </div>
       </div>
 
@@ -341,12 +364,13 @@ const QuestionBank = () => {
           <table className="w-full text-sm">
             <thead className="bg-muted">
               <tr>
-                <th className="p-3 text-left">Question</th>
-                <th className="p-3">Subject</th>
-                <th className="p-3">Correct</th>
-                <th className="p-3">Uploaded Via</th>
-                <th className="p-3">File</th>
-                <th className="p-3">Actions</th>
+                <th className="p-2 text-left">Question</th>
+                <th className="p-2">Subject</th>
+                <th className="p-2">Correct</th>
+                <th className="p-2"></th>
+                <th className="p-2"></th>
+                <th className="p-2"></th>
+                <th className="p-2">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -360,10 +384,12 @@ const QuestionBank = () => {
                     Option {q.correctAnswer + 1}
                   </td>
                   <td className="p-3">
-                    {q.uploadSource}
+                   
+                  </td><td className="p-3">
+                   
                   </td>
                   <td className="p-3">
-                    {q.fileName || "-"}
+                   
                   </td>
                   <td className="p-3 flex gap-2">
                     <Button

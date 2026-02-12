@@ -24,7 +24,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 
-const TEST_DURATION = 3 * 60 * 60; // 3 hours in seconds
+const TEST_DURATION = 3 * 60 * 60;
 
 const subjectOrder: Record<string, number> = {
   physics: 1,
@@ -39,12 +39,11 @@ const Exam = () => {
   const [showViolationDialog, setShowViolationDialog] = useState(false);
   const isSubmittingRef = useRef(false);
 
-  /* ================= INIT TEST ================= */
+  /* ================= INIT ================= */
 
   useEffect(() => {
     const initTest = async () => {
       const user = getUserData();
-
       if (!user) {
         navigate("/mock-test/register");
         return;
@@ -52,7 +51,6 @@ const Exam = () => {
 
       const saved = getTestState();
 
-      // Resume test if not submitted
       if (saved && !saved.isSubmitted) {
         setTestState(saved);
         return;
@@ -87,7 +85,6 @@ const Exam = () => {
   const submitTest = useCallback(
     async (reason: "completed" | "timeout" | "violation") => {
       const user = getUserData();
-
       if (!testState || !user || isSubmittingRef.current) return;
 
       isSubmittingRef.current = true;
@@ -119,9 +116,7 @@ const Exam = () => {
     if (!testState || testState.isSubmitted) return;
 
     const violation = () => {
-      if (!isSubmittingRef.current) {
-        setShowViolationDialog(true);
-      }
+      if (!isSubmittingRef.current) setShowViolationDialog(true);
     };
 
     const handleVisibility = () => {
@@ -144,6 +139,10 @@ const Exam = () => {
       </div>
     );
   }
+
+  const totalQuestions = testState.questions.length;
+  const isLastQuestion =
+    testState.currentQuestion === totalQuestions - 1;
 
   const currentQuestion =
     testState.questions[testState.currentQuestion];
@@ -184,20 +183,21 @@ const Exam = () => {
           <QuestionCard
             question={currentQuestion}
             questionNumber={testState.currentQuestion + 1}
-            totalQuestions={testState.questions.length}
+            totalQuestions={totalQuestions}
             selectedAnswer={testState.answers[currentQuestion.id]}
             onAnswerChange={handleAnswerChange}
             onPrevious={() =>
               goToQuestion(testState.currentQuestion - 1)
             }
-            onNext={() =>
-              goToQuestion(testState.currentQuestion + 1)
-            }
+            onNext={() => {
+              if (isLastQuestion) {
+                setShowSubmitDialog(true);
+              } else {
+                goToQuestion(testState.currentQuestion + 1);
+              }
+            }}
             canGoPrevious={testState.currentQuestion > 0}
-            canGoNext={
-              testState.currentQuestion <
-              testState.questions.length - 1
-            }
+            isLastQuestion={isLastQuestion}
           />
         </div>
 
@@ -209,7 +209,7 @@ const Exam = () => {
         />
       </div>
 
-      {/* SUBMIT CONFIRM */}
+      {/* CONFIRM SUBMIT */}
       <AlertDialog
         open={showSubmitDialog}
         onOpenChange={setShowSubmitDialog}
@@ -218,6 +218,7 @@ const Exam = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Submit Test?</AlertDialogTitle>
             <AlertDialogDescription>
+              Are you sure you want to submit the test?
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -226,7 +227,7 @@ const Exam = () => {
             <AlertDialogAction
               onClick={() => submitTest("completed")}
             >
-              Submit Test
+              Yes, Submit
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
