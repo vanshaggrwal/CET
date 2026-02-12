@@ -5,7 +5,6 @@ import {
   orderBy,
   limit,
   startAfter,
-  QueryDocumentSnapshot,
   getCountFromServer,
 } from "firebase/firestore";
 import { db } from "../../firebase";
@@ -18,7 +17,6 @@ const PAGE_SIZE = 10;
 
 export const fetchExamQuestionsFromFirestore = async () => {
   const questionsRef = collection(db, "questions");
-
   const snap = await getDocs(questionsRef);
 
   const allQuestions = snap.docs.map((doc) => ({
@@ -49,40 +47,35 @@ export const fetchExamQuestionsFromFirestore = async () => {
 };
 
 /* =========================================================
-   PAGINATION FOR ADMIN QUESTION BANK
+   PAGINATION (PAGE NUMBER BASED – NO REPEATS)
 ========================================================= */
-
 export const fetchQuestionsPaginated = async (
-  lastDoc: QueryDocumentSnapshot | null
+  page: number,
+  pageSize: number
 ) => {
   const questionsRef = collection(db, "questions");
 
-  const q = lastDoc
-    ? query(
-        questionsRef,
-        orderBy("__name__"), // safest ordering
-        startAfter(lastDoc),
-        limit(PAGE_SIZE)
-      )
-    : query(
-        questionsRef,
-        orderBy("__name__"),
-        limit(PAGE_SIZE)
-      );
+  const q = query(
+    questionsRef,
+    orderBy("createdAt", "desc"),
+    limit(page * pageSize)
+  );
 
   const snap = await getDocs(q);
 
+  const allDocs = snap.docs;
+
+  const startIndex = (page - 1) * pageSize;
+  const paginatedDocs = allDocs.slice(startIndex, startIndex + pageSize);
+
   return {
-    questions: snap.docs.map((doc) => ({
+    questions: paginatedDocs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     })),
-    lastDoc:
-      snap.docs.length > 0
-        ? snap.docs[snap.docs.length - 1]
-        : null,
   };
 };
+
 
 /* =========================================================
    TOTAL QUESTIONS COUNT

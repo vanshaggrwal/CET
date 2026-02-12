@@ -14,6 +14,9 @@ import {
   getQuestionsCount,
 } from "@/lib/questionService";
 
+import * as XLSX from "xlsx";
+import mammoth from "mammoth";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -47,9 +50,9 @@ const QuestionBank = () => {
   const [form, setForm] = useState<QuestionForm>(EMPTY_FORM);
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  /* ===== PAGINATION ===== */
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageCursors, setPageCursors] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   /* ================= INITIAL LOAD ================= */
@@ -60,43 +63,24 @@ const QuestionBank = () => {
       setTotalPages(Math.ceil(total / PAGE_SIZE));
       await loadPage(1);
     };
-
     init();
   }, []);
 
   /* ================= LOAD PAGE ================= */
 
-  const loadPage = async (pageNumber: number) => {
-    try {
-      setLoading(true);
-
-      let cursor = null;
-
-      if (pageNumber > 1 && pageCursors[pageNumber - 2]) {
-        cursor = pageCursors[pageNumber - 2];
-      }
-
-      const res = await fetchQuestionsPaginated(cursor);
-
-      setQuestions(res.questions);
-
-      const updatedCursors = [...pageCursors];
-      updatedCursors[pageNumber - 1] = res.lastDoc;
-
-      setPageCursors(updatedCursors);
-      setCurrentPage(pageNumber);
-    } catch (error) {
-      console.error("Pagination error:", error);
-    } finally {
-      setLoading(false);
-    }
+  const loadPage = async (page: number) => {
+    setLoading(true);
+    const res = await fetchQuestionsPaginated(page, PAGE_SIZE);
+    setQuestions(res.questions);
+    setCurrentPage(page);
+    setLoading(false);
   };
 
   /* ================= SAVE ================= */
 
   const handleSave = async () => {
     if (!form.question.trim()) {
-      alert("Question text is required");
+      alert("Question text required");
       return;
     }
 
@@ -105,14 +89,15 @@ const QuestionBank = () => {
     } else {
       await addDoc(collection(db, "questions"), {
         ...form,
+        uploadSource: "Manual",
+        fileName: null,
         createdAt: serverTimestamp(),
       });
     }
 
     setForm(EMPTY_FORM);
     setEditingId(null);
-
-    await loadPage(currentPage);
+    loadPage(currentPage);
   };
 
   const handleEdit = (q: any) => {
@@ -126,18 +111,153 @@ const QuestionBank = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this question?")) return;
-
+    if (!confirm("Delete question?")) return;
     await deleteDoc(doc(db, "questions", id));
+    loadPage(currentPage);
+  };
 
-    await loadPage(currentPage);
+  /* ================= JSON UPLOAD ================= */
+
+  const handleJsonUpload = async (e: any) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const text = await file.text();
+    const json = JSON.parse(text);
+
+    for (const subject in json) {
+      for (const q of json[subject]) {
+        await addDoc(collection(db, "questions"), {
+          question: q.question,
+          options: q.options,
+          correctAnswer: q.answer,
+          subject,
+          uploadSource: "JSON",
+          fileName: file.name,
+          createdAt: serverTimestamp(),
+        });
+      }
+    }
+
+    alert("JSON uploaded successfully");
+    loadPage(1);
+  };
+
+  /* ================= EXCEL UPLOAD ================= */
+
+  const handleExcelUpload = async (e: any) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const buffer = await file.arrayBuffer();
+    const workbook = XLSX.read(buffer);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows: any[] = XLSX.utils.sheet_to_json(sheet);
+
+    for (const row of rows) {
+      await addDoc(collection(db, "questions"), {
+        subject: row.subject,
+        question: row.question,
+        options: [
+          row.option1,
+          row.option2,
+          row.option3,
+          row.option4,
+        ],
+        correctAnswer: Number(row.correctAnswer),
+        uploadSource: "Excel",
+        fileName: file.name,
+        createdAt: serverTimestamp(),
+      });
+    }
+
+    alert("Excel uploaded successfully");
+    loadPage(1);
+  };
+
+  /* ================= WORD UPLOAD ================= */
+
+  const handleWordUpload = async (e: any) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const buffer = await file.arrayBuffer();
+    const { value } = await mammoth.extractRawText({
+      arrayBuffer: buffer,
+    });
+
+    const blocks = value.split("Q:").slice(1);
+
+    for (const block of blocks) {
+      const lines = block
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+
+      const question = lines[0];
+      const options = lines
+        .filter((l) => /^[A-D]\)/.test(l))
+        .map((l) => l.slice(3));
+
+      const answerLine = lines.find((l) =>
+        l.startsWith("ANSWER:")
+      );
+
+      const subjectLine = lines.find((l) =>
+        l.startsWith("SUBJECT:")
+      );
+
+      if (!question || options.length !== 4 || !answerLine)
+        continue;
+
+      const correctAnswer =
+        answerLine.replace("ANSWER:", "").trim().charCodeAt(0) -
+        65;
+
+      const subject = subjectLine
+        ? subjectLine.replace("SUBJECT:", "").trim()
+        : "physics";
+
+      await addDoc(collection(db, "questions"), {
+        question,
+        options,
+        correctAnswer,
+        subject,
+        uploadSource: "Word",
+        fileName: file.name,
+        createdAt: serverTimestamp(),
+      });
+    }
+
+    alert("Word uploaded successfully");
+    loadPage(1);
   };
 
   /* ================= UI ================= */
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Question Bank</h1>
+      <h1 className="text-2xl font-bold mb-6">
+        Question Bank
+      </h1>
+
+      {/* BULK UPLOAD */}
+      <div className="flex gap-6 mb-6">
+        <div>
+          <label>Upload JSON</label>
+          <input type="file" accept=".json" onChange={handleJsonUpload} />
+        </div>
+
+        <div>
+          <label>Upload Excel</label>
+          <input type="file" accept=".xlsx" onChange={handleExcelUpload} />
+        </div>
+
+        <div>
+          <label>Upload Word</label>
+          <input type="file" accept=".docx" onChange={handleWordUpload} />
+        </div>
+      </div>
 
       {/* FORM */}
       <div className="bg-card border rounded-xl p-6 mb-8">
@@ -181,7 +301,9 @@ const QuestionBank = () => {
             <SelectContent>
               <SelectItem value="physics">Physics</SelectItem>
               <SelectItem value="chemistry">Chemistry</SelectItem>
-              <SelectItem value="mathematics">Mathematics</SelectItem>
+              <SelectItem value="mathematics">
+                Mathematics
+              </SelectItem>
             </SelectContent>
           </Select>
 
@@ -192,7 +314,7 @@ const QuestionBank = () => {
             }
           >
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="Correct Option" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {[0, 1, 2, 3].map((i) => (
@@ -213,7 +335,7 @@ const QuestionBank = () => {
       <div className="bg-card border rounded-xl overflow-hidden">
         {loading ? (
           <div className="p-6 text-center">
-            Loading questions...
+            Loading...
           </div>
         ) : (
           <table className="w-full text-sm">
@@ -222,10 +344,11 @@ const QuestionBank = () => {
                 <th className="p-3 text-left">Question</th>
                 <th className="p-3">Subject</th>
                 <th className="p-3">Correct</th>
+                <th className="p-3">Uploaded Via</th>
+                <th className="p-3">File</th>
                 <th className="p-3">Actions</th>
               </tr>
             </thead>
-
             <tbody>
               {questions.map((q) => (
                 <tr key={q.id} className="border-t">
@@ -235,6 +358,12 @@ const QuestionBank = () => {
                   </td>
                   <td className="p-3">
                     Option {q.correctAnswer + 1}
+                  </td>
+                  <td className="p-3">
+                    {q.uploadSource}
+                  </td>
+                  <td className="p-3">
+                    {q.fileName || "-"}
                   </td>
                   <td className="p-3 flex gap-2">
                     <Button
@@ -247,7 +376,9 @@ const QuestionBank = () => {
                     <Button
                       size="sm"
                       variant="destructive"
-                      onClick={() => handleDelete(q.id)}
+                      onClick={() =>
+                        handleDelete(q.id)
+                      }
                     >
                       Delete
                     </Button>
@@ -259,43 +390,56 @@ const QuestionBank = () => {
         )}
       </div>
 
-      {/* GOOGLE STYLE PAGINATION */}
-      <div className="flex justify-center gap-2 mt-8 flex-wrap">
-        {Array.from({ length: totalPages }, (_, i) => {
-          const page = i + 1;
+      {/* PAGINATION */}
+      <div className="flex justify-center items-center gap-2 mt-8 flex-wrap">
+  {currentPage > 3 && (
+    <>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => loadPage(1)}
+      >
+        1
+      </Button>
+      {currentPage > 4 && <span>...</span>}
+    </>
+  )}
 
-          if (
-            page === 1 ||
-            page === totalPages ||
-            (page >= currentPage - 2 &&
-              page <= currentPage + 2)
-          ) {
-            return (
-              <Button
-                key={page}
-                size="sm"
-                variant={
-                  currentPage === page
-                    ? "default"
-                    : "outline"
-                }
-                onClick={() => loadPage(page)}
-              >
-                {page}
-              </Button>
-            );
-          }
+  {Array.from({ length: totalPages }, (_, i) => i + 1)
+    .filter(
+      (page) =>
+        page >= currentPage - 2 &&
+        page <= currentPage + 2
+    )
+    .map((page) => (
+      <Button
+        key={page}
+        size="sm"
+        variant={
+          currentPage === page
+            ? "default"
+            : "outline"
+        }
+        onClick={() => loadPage(page)}
+      >
+        {page}
+      </Button>
+    ))}
 
-          if (
-            page === currentPage - 3 ||
-            page === currentPage + 3
-          ) {
-            return <span key={page}>...</span>;
-          }
+  {currentPage < totalPages - 2 && (
+    <>
+      {currentPage < totalPages - 3 && <span>...</span>}
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => loadPage(totalPages)}
+      >
+        {totalPages}
+      </Button>
+    </>
+  )}
+</div>
 
-          return null;
-        })}
-      </div>
     </div>
   );
 };
