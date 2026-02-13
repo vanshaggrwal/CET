@@ -147,7 +147,6 @@ export const citiesByState: Record<string, string[]> = {
   Kerala: ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur"],
   "Madhya Pradesh": ["Bhopal", "Indore", "Jabalpur", "Gwalior"],
   Maharashtra: [
-  // Konkan Region
   "Mumbai City",
   "Mumbai Suburban",
   "Thane",
@@ -155,22 +154,16 @@ export const citiesByState: Record<string, string[]> = {
   "Raigad",
   "Ratnagiri",
   "Sindhudurg",
-
-  // Pune Division (Western Maharashtra)
   "Pune",
   "Satara",
   "Sangli",
   "Kolhapur",
   "Solapur",
-
-  // Nashik Division
   "Nashik",
   "Ahmednagar",
   "Dhule",
   "Nandurbar",
   "Jalgaon",
-
-  // Aurangabad Division (Marathwada)
   "Aurangabad",
   "Jalna",
   "Beed",
@@ -179,15 +172,11 @@ export const citiesByState: Record<string, string[]> = {
   "Nanded",
   "Hingoli",
   "Parbhani",
-
-  // Amravati Division (Vidarbha West)
   "Amravati",
   "Akola",
   "Washim",
   "Buldhana",
   "Yavatmal",
-
-  // Nagpur Division (Vidarbha East)
   "Nagpur",
   "Wardha",
   "Bhandara",
@@ -195,7 +184,6 @@ export const citiesByState: Record<string, string[]> = {
   "Chandrapur",
   "Gadchiroli"
 ],
-
   Manipur: ["Imphal"],
   Meghalaya: ["Shillong"],
   Mizoram: ["Aizawl"],
@@ -226,7 +214,6 @@ export const citiesByState: Record<string, string[]> = {
   "Sangrur",
   "Tarn Taran"
 ],
-
   Rajasthan: [
   "Ajmer","Alwar","Anupgarh","Balotra","Banswara","Baran","Barmer",
   "Beawar","Bharatpur","Bhilwara","Bikaner","Bundi","Chittorgarh",
@@ -238,7 +225,6 @@ export const citiesByState: Record<string, string[]> = {
   "Rajsamand","Salumber","Sanchore","Sawai Madhopur","Shahpura",
   "Sikar","Sirohi","Sri Ganganagar","Tonk","Udaipur"
 ],
-
   Sikkim: ["Gangtok"],
   "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Trichy"],
   Telangana: ["Hyderabad", "Warangal", "Nizamabad"],
@@ -260,9 +246,7 @@ export const citiesByState: Record<string, string[]> = {
   "Shahjahanpur","Shamli","Shravasti","Siddharthnagar",
   "Sitapur","Sonbhadra","Sultanpur","Unnao","Varanasi"
 ],
-
   Uttarakhand: [
-
   "Dehradun",
   "Haridwar",
   "Pauri Garhwal",
@@ -270,8 +254,6 @@ export const citiesByState: Record<string, string[]> = {
   "Rudraprayag",
   "Chamoli",
   "Uttarkashi",
-
-  
   "Nainital",
   "Almora",
   "Pithoragarh",
@@ -279,7 +261,6 @@ export const citiesByState: Record<string, string[]> = {
   "Champawat",
   "Udham Singh Nagar"
 ],
-
   "West Bengal": ["Kolkata", "Howrah", "Durgapur", "Siliguri"],
   "Andaman and Nicobar Islands": ["Port Blair"],
   Chandigarh: ["Chandigarh"],
@@ -297,7 +278,6 @@ export const citiesByState: Record<string, string[]> = {
   "South West Delhi",
   "West Delhi"
 ],
-
   "Jammu and Kashmir": ["Srinagar", "Jammu"],
   Ladakh: ["Leh", "Kargil"],
   Lakshadweep: ["Kavaratti"],

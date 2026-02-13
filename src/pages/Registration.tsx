@@ -85,10 +85,14 @@ const validatePhone = (phone: string) =>
     if (!formData.city)
       newErrors.city = "City is required";
 
-    if (!formData.email)
-      newErrors.email = "Email is required";
-    else if (!validateEmail(formData.email))
-      newErrors.email = "Invalid email address";
+    if (!formData.email) {
+  newErrors.email = "Email is required";
+} else {
+  const emailError = validateEmail(formData.email);
+  if (emailError) {
+    newErrors.email = emailError;
+  }
+}
 
     if (!formData.phone)
       newErrors.phone = "Phone number is required";
