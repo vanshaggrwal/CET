@@ -12,8 +12,8 @@ import Results from "./pages/Results";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./admin/AdminDashboard";
 import AdminLayout from "./admin/AdminLayout";
-import AdminSidebar from "./admin/AdminSidebar";
 import QuestionBank from "./admin/QuestionBank";
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +23,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+      <ScrollToTop />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/mock-test" element={<MockTestLanding />} />

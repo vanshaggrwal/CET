@@ -29,29 +29,31 @@ const Header = ({ showMockTestLink = true }: HeaderProps) => {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
 
-          {location.pathname !== "/" && (
-            <Link
-              to="/"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Home
-            </Link>
-          )}
+        {location.pathname === "/" && showMockTestLink && (
+    <Link
+      to="/mock-test"
+      className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+    >
+      CET Mock Test
+      <Badge
+        variant="secondary"
+        className="text-xs bg-primary/10 text-primary hover:bg-primary/10"
+      >
+        Free
+      </Badge>
+    </Link>
+  )}
 
-          {showMockTestLink && (
-            <Link
-              to="/mock-test"
-              className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-            >
-              CET Mock Test
-              <Badge
-                variant="secondary"
-                className="text-xs bg-primary/10 text-primary hover:bg-primary/10"
-              >
-                Free
-              </Badge>
-            </Link>
-          )}
+  {/* Show Home link on all pages EXCEPT Home */}
+  {location.pathname !== "/" && (
+    <Link
+      to="/"
+      className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+    >
+      Home
+    </Link>
+  )}
+          
         </nav>
 
         {/* Mobile Toggle */}
@@ -71,34 +73,39 @@ const Header = ({ showMockTestLink = true }: HeaderProps) => {
       </div>
 
       {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden border-t border-border bg-card px-6 py-4 space-y-4">
+    {isOpen && (
+  <div className="md:hidden border-t border-border bg-card px-6 py-4 space-y-4">
 
-          {location.pathname !== "/" && (
-            <Link
-              to="/"
-              onClick={() => setIsOpen(false)}
-              className="block text-sm font-medium text-muted-foreground hover:text-foreground"
-            >
-              Home
-            </Link>
-          )}
+    {/* Show Mock Test ONLY on Home */}
+    {location.pathname === "/" && showMockTestLink && (
+      <Link
+        to="/mock-test"
+        onClick={() => setIsOpen(false)}
+        className="flex items-center gap-2 text-sm font-medium text-primary"
+      >
+        CET Mock Test
+        <Badge
+          variant="secondary"
+          className="text-xs bg-primary/10 text-primary"
+        >
+          Free
+        </Badge>
+      </Link>
+    )}
 
-          {showMockTestLink && (
-            <Link
-              to="/mock-test"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 text-sm font-medium text-primary"
-            >
-              CET Mock Test
-              <Badge
-                variant="secondary"
-                className="text-xs bg-primary/10 text-primary"
-              >
-                Free
-              </Badge>
-            </Link>
-          )}
+    {/* Show Home on all pages except Home */}
+    {location.pathname !== "/" && (
+      <Link
+        to="/"
+        onClick={() => setIsOpen(false)}
+        className="block text-sm font-medium text-muted-foreground hover:text-foreground"
+      >
+        Home
+      </Link>
+    )}
+
+ 
+
         </div>
       )}
     </header>

@@ -112,110 +112,109 @@ const Results = () => {
   };
 
   const submissionReason = testState?.submissionReason;
-
-  return (
+return (
   <div className="min-h-screen bg-background">
     <Header />
 
-    <div className="container px-4 sm:px-6 py-8 sm:py-12">
+    <div className="container px-3 sm:px-6 py-6 sm:py-12">
       <div className="max-w-4xl mx-auto">
 
         {/* Submission Warnings */}
         {submissionReason === "violation" && (
-          <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-center">
-            <p className="text-destructive font-medium text-sm sm:text-base">
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-center">
+            <p className="text-destructive font-medium text-xs sm:text-base">
               Test submitted due to navigation away from exam window.
             </p>
           </div>
         )}
 
         {submissionReason === "timeout" && (
-          <div className="mb-6 p-4 rounded-lg bg-warning/10 border border-warning/30 text-center">
-            <p className="text-warning font-medium text-sm sm:text-base">
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg bg-warning/10 border border-warning/30 text-center">
+            <p className="text-warning font-medium text-xs sm:text-base">
               Test auto-submitted as time expired.
             </p>
           </div>
         )}
 
         {/* Main Result Card */}
-        <Card className="border-2 border-primary/20 shadow-lg mb-8">
-          <CardHeader className="text-center pb-4">
-            <div className="mx-auto mb-4 h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <Trophy className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+        <Card className="border-2 border-primary/20 shadow-lg mb-6 sm:mb-8">
+          <CardHeader className="text-center pb-3 sm:pb-4">
+            <div className="mx-auto mb-3 sm:mb-4 h-12 w-12 sm:h-16 sm:w-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <Trophy className="h-5 w-5 sm:h-8 sm:w-8 text-primary" />
             </div>
 
-            <CardTitle className="text-xl sm:text-2xl">
+            <CardTitle className="text-lg sm:text-2xl">
               {getScoreMessage()}
             </CardTitle>
 
-            <p className="text-muted-foreground text-sm sm:text-base">
+            <p className="text-muted-foreground text-xs sm:text-base">
               {userData.firstName} {userData.lastName}
             </p>
           </CardHeader>
 
           <CardContent>
             {/* Total Score */}
-            <div className="text-center mb-8">
-              <p className={`text-4xl sm:text-6xl font-bold ${getScoreColor()}`}>
+            <div className="text-center mb-6 sm:mb-8">
+              <p className={`text-3xl sm:text-6xl font-bold ${getScoreColor()}`}>
                 {result.totalScore}
               </p>
 
-              <p className="text-base sm:text-xl text-muted-foreground">
+              <p className="text-sm sm:text-xl text-muted-foreground">
                 out of {result.maxScore} marks
               </p>
 
-              <p className="text-sm sm:text-lg text-muted-foreground mt-2">
+              <p className="text-xs sm:text-lg text-muted-foreground mt-1 sm:mt-2">
                 ({getScorePercentage()}%)
               </p>
             </div>
 
             {/* Subject Breakdown */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
               
               {/* Physics */}
-              <div className="p-4 rounded-lg bg-muted text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <BookOpen className="h-5 w-5 text-physics" />
-                  <span className="font-medium">Physics</span>
+              <div className="p-3 sm:p-4 rounded-lg bg-muted text-center">
+                <div className="flex items-center justify-center gap-2 mb-1 sm:mb-2">
+                  <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-physics" />
+                  <span className="font-medium text-sm sm:text-base">Physics</span>
                 </div>
 
-                <p className="text-xl sm:text-2xl font-bold">
+                <p className="text-lg sm:text-2xl font-bold">
                   {result.physics.correct}/{result.physics.total}
                 </p>
 
-                <p className="text-xs sm:text-sm font-medium">
+                <p className="text-[11px] sm:text-sm font-medium">
                   Attempted: {result.physics.attempted}
                 </p>
               </div>
 
               {/* Chemistry */}
-              <div className="p-4 rounded-lg bg-muted text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Beaker className="h-5 w-5 text-success" />
-                  <span className="font-medium">Chemistry</span>
+              <div className="p-3 sm:p-4 rounded-lg bg-muted text-center">
+                <div className="flex items-center justify-center gap-2 mb-1 sm:mb-2">
+                  <Beaker className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
+                  <span className="font-medium text-sm sm:text-base">Chemistry</span>
                 </div>
 
-                <p className="text-xl sm:text-2xl font-bold">
+                <p className="text-lg sm:text-2xl font-bold">
                   {result.chemistry.correct}/{result.chemistry.total}
                 </p>
 
-                <p className="text-xs sm:text-sm font-medium">
+                <p className="text-[11px] sm:text-sm font-medium">
                   Attempted: {result.chemistry.attempted}
                 </p>
               </div>
 
               {/* Mathematics */}
-              <div className="p-4 rounded-lg bg-muted text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Calculator className="h-5 w-5 text-mathematics" />
-                  <span className="font-medium">Mathematics</span>
+              <div className="p-3 sm:p-4 rounded-lg bg-muted text-center">
+                <div className="flex items-center justify-center gap-2 mb-1 sm:mb-2">
+                  <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-mathematics" />
+                  <span className="font-medium text-sm sm:text-base">Mathematics</span>
                 </div>
 
-                <p className="text-xl sm:text-2xl font-bold">
+                <p className="text-lg sm:text-2xl font-bold">
                   {result.mathematics.correct}/{result.mathematics.total}
                 </p>
 
-                <p className="text-xs sm:text-sm font-medium">
+                <p className="text-[11px] sm:text-sm font-medium">
                   Attempted: {result.mathematics.attempted}
                 </p>
               </div>
@@ -224,18 +223,18 @@ const Results = () => {
         </Card>
 
         {/* Email Info Card */}
-        <Card className="mb-8 bg-primary/5 border-primary/20">
-          <CardContent className="py-6">
-            <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <Mail className="h-6 w-6 text-primary" />
+        <Card className="mb-6 sm:mb-8 bg-primary/5 border-primary/20">
+          <CardContent className="py-4 sm:py-6">
+            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 text-center sm:text-left">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Mail className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               </div>
 
               <div>
-                <h3 className="font-medium">
+                <h3 className="font-medium text-sm sm:text-base">
                   Check your email for detailed scorecard & brochure
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Sent to {userData.email}
                 </p>
               </div>
@@ -244,18 +243,18 @@ const Results = () => {
         </Card>
 
         {/* Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
           <Button
             variant="outline"
             onClick={handleRetakeTest}
-            className="gap-2 w-full sm:w-auto"
+            className="gap-2 w-full sm:w-auto text-sm sm:text-base"
           >
             <RefreshCw className="h-4 w-4" />
             Retake Test
           </Button>
 
           <Link to="/" className="w-full sm:w-auto">
-            <Button className="gap-2 w-full sm:w-auto">
+            <Button className="gap-2 w-full sm:w-auto text-sm sm:text-base">
               <Home className="h-4 w-4" />
               Back to Home
             </Button>

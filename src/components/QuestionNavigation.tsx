@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Question } from "@/lib/testUtils";
-
+import type { Question } from "@/lib/testUtils"; // ✅ make sure it's exported
 interface Props {
   questions: Question[];
   answers: Record<string, number | null>;
@@ -19,6 +18,24 @@ const QuestionNavigation = ({
       .map((q, i) => (q.subject === subject ? i : null))
       .filter((i): i is number => i !== null);
 
+  const currentSubject = questions[currentIndex]?.subject;
+
+  const subjects: {
+    title: string;
+    key: Question["subject"];
+    badgeClass: string;
+  }[] = [
+    { title: "Physics", key: "physics", badgeClass: "text-physics" },
+    { title: "Chemistry", key: "chemistry", badgeClass: "text-success" },
+    { title: "Mathematics", key: "mathematics", badgeClass: "text-mathematics" },
+  ];
+
+  /* 🔥 Reorder for Mobile */
+  const reorderedSubjects = [
+    ...subjects.filter((s) => s.key === currentSubject),
+    ...subjects.filter((s) => s.key !== currentSubject),
+  ];
+
   const renderSection = (
     title: string,
     subject: Question["subject"],
@@ -29,9 +46,10 @@ const QuestionNavigation = ({
       (i) => answers[questions[i].id] !== null
     ).length;
 
+    if (indexes.length === 0) return null;
+
     return (
       <div className="mb-6">
-        {/* Section Header */}
         <div className="flex justify-between items-center mb-3">
           <span className={cn("text-sm font-medium", badgeClass)}>
             {title}
@@ -41,7 +59,6 @@ const QuestionNavigation = ({
           </span>
         </div>
 
-        {/* Responsive Grid */}
         <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2">
           {indexes.map((index) => {
             const q = questions[index];
@@ -53,8 +70,8 @@ const QuestionNavigation = ({
                 key={q.id}
                 onClick={() => onNavigate(index)}
                 className={cn(
-                  "h-9 w-9 sm:h-8 sm:w-8 rounded-md text-sm font-medium transition-all duration-150",
-                  "flex items-center justify-center",
+                  "h-9 w-9 sm:h-8 sm:w-8 rounded-md text-sm font-medium",
+                  "flex items-center justify-center transition-all",
                   isAnswered
                     ? "bg-primary text-white"
                     : "bg-muted hover:bg-muted/80",
@@ -78,9 +95,19 @@ const QuestionNavigation = ({
         Question Navigator
       </h3>
 
-      {renderSection("Physics", "physics", "text-physics")}
-      {renderSection("Chemistry", "chemistry", "text-success")}
-      {renderSection("Mathematics", "mathematics", "text-mathematics")}
+      {/* 🔥 Mobile Dynamic Order */}
+      <div className="block lg:hidden">
+        {reorderedSubjects.map((s) =>
+          renderSection(s.title, s.key, s.badgeClass)
+        )}
+      </div>
+
+      {/* Desktop Normal Order */}
+      <div className="hidden lg:block">
+        {subjects.map((s) =>
+          renderSection(s.title, s.key, s.badgeClass)
+        )}
+      </div>
     </div>
   );
 };
