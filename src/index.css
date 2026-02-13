@@ -20,18 +20,18 @@
     --popover-foreground: 222 47% 11%;
 
     /* Deep academic blue for primary actions */
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 213 100% 26%; /* #003c84 */
+--primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+--ring: 213 100% 26%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+--physics: 213 100% 26%;
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
+--sidebar-primary: 213 100% 26%;
+--sidebar-primary-foreground: 0 0% 100%;
+--sidebar-ring: 213 100% 26%;
 
+--chart-1: 213 100% 26%;
     /* Warning/Destructive - serious but not alarming */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
@@ -88,8 +88,8 @@
     --popover: 222 47% 15%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 11%;
+    --primary: 213 100% 26%;
+    --primary-foreground: 0 0% 100%%;
 
     --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
@@ -121,14 +121,14 @@
 
     --sidebar-background: 222 47% 15%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-primary: 213 100% 26%;
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 217 33% 17%;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 217 33% 25%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-ring: 213 100% 26%;
 
-    --chart-1: 217 91% 60%;
+    --chart-1: 213 100% 26%;
     --chart-2: 142 76% 36%;
     --chart-3: 262 83% 68%;
     --chart-4: 38 92% 50%;
