@@ -178,35 +178,46 @@ const Exam = () => {
         onManualSubmit={() => setShowSubmitDialog(true)}
       />
 
-      <div className="container py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <QuestionCard
-            question={currentQuestion}
-            questionNumber={testState.currentQuestion + 1}
-            totalQuestions={totalQuestions}
-            selectedAnswer={testState.answers[currentQuestion.id]}
-            onAnswerChange={handleAnswerChange}
-            onPrevious={() =>
-              goToQuestion(testState.currentQuestion - 1)
-            }
-            onNext={() => {
-              if (isLastQuestion) {
-                setShowSubmitDialog(true);
-              } else {
-                goToQuestion(testState.currentQuestion + 1);
+      {/* Responsive Layout */}
+      <div className="container px-4 sm:px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Question Section */}
+          <div className="lg:col-span-2">
+            <QuestionCard
+              question={currentQuestion}
+              questionNumber={testState.currentQuestion + 1}
+              totalQuestions={totalQuestions}
+              selectedAnswer={testState.answers[currentQuestion.id]}
+              onAnswerChange={handleAnswerChange}
+              onPrevious={() =>
+                goToQuestion(testState.currentQuestion - 1)
               }
-            }}
-            canGoPrevious={testState.currentQuestion > 0}
-            isLastQuestion={isLastQuestion}
-          />
-        </div>
+              onNext={() => {
+                if (isLastQuestion) {
+                  setShowSubmitDialog(true);
+                } else {
+                  goToQuestion(testState.currentQuestion + 1);
+                }
+              }}
+              canGoPrevious={testState.currentQuestion > 0}
+              isLastQuestion={isLastQuestion}
+            />
+          </div>
 
-        <QuestionNavigation
-          questions={testState.questions}
-          answers={testState.answers}
-          currentIndex={testState.currentQuestion}
-          onNavigate={goToQuestion}
-        />
+          {/* Navigation Panel */}
+          <div className="lg:sticky lg:top-24">
+            <div className="max-h-[70vh] overflow-y-auto">
+              <QuestionNavigation
+                questions={testState.questions}
+                answers={testState.answers}
+                currentIndex={testState.currentQuestion}
+                onNavigate={goToQuestion}
+              />
+            </div>
+          </div>
+
+        </div>
       </div>
 
       {/* CONFIRM SUBMIT */}

@@ -234,240 +234,211 @@ const QuestionBank = () => {
   };
 
   /* ================= UI ================= */
+return (
+  <div className="p-4 sm:p-6 lg:p-8">
+    <h1 className="text-xl sm:text-2xl font-bold mb-6">
+      Question Bank
+    </h1>
 
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">
-        Question Bank
-      </h1>
-
-      {/* BULK UPLOAD */}
-      <div className="flex gap-6 mb-6">
-        <div>
-          <label>Upload JSON</label>
-          <input type="file" accept=".json" onChange={handleJsonUpload} />
-        </div>
-
-        <div>
-          <label>Upload Excel</label>
-          <input type="file" accept=".xlsx" onChange={handleExcelUpload} />
-        </div>
-
-        <div>
-          <label>Upload Word</label>
-          <input type="file" accept=".docx" onChange={handleWordUpload} />
-        </div>
+    {/* BULK UPLOAD */}
+    <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mb-6">
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium">Upload JSON</label>
+        <input type="file" accept=".json" onChange={handleJsonUpload} />
       </div>
 
-      {/* FORM */}
-      <div className="bg-card border rounded-xl p-6 mb-8">
-        <h2 className="font-semibold mb-4">
-          {editingId ? "Edit Question" : "Add Question"}
-        </h2>
-
-        <Input
-          placeholder="Question text"
-          value={form.question}
-          onChange={(e) =>
-            setForm({ ...form, question: e.target.value })
-          }
-          className="mb-3"
-        />
-
-        {form.options.map((opt, i) => (
-          <Input
-            key={i}
-            placeholder={`Option ${i + 1}`}
-            value={opt}
-            onChange={(e) => {
-              const updated = [...form.options];
-              updated[i] = e.target.value;
-              setForm({ ...form, options: updated });
-            }}
-            className="mb-2"
-          />
-        ))}
-
-        <div className="flex gap-4 mt-4">
-         <div className="flex gap-6 mt-4">
-
-  {/* SUBJECT SELECT */}
-  <div className="flex flex-col gap-1">
-    <label className="text-sm font-medium text-muted-foreground">
-      Subject
-    </label>
-
-    <Select
-      value={form.subject}
-      onValueChange={(v) =>
-        setForm({ ...form, subject: v as any })
-      }
-    >
-      <SelectTrigger className="w-44">
-        <SelectValue placeholder="Select Subject" />
-      </SelectTrigger>
-
-      <SelectContent>
-        <SelectItem value="physics">Physics</SelectItem>
-        <SelectItem value="chemistry">Chemistry</SelectItem>
-        <SelectItem value="mathematics">
-          Mathematics
-        </SelectItem>
-      </SelectContent>
-    </Select>
-  </div>
-
-  {/* CORRECT OPTION SELECT */}
-  <div className="flex flex-col gap-1">
-    <label className="text-sm font-medium text-muted-foreground">
-      Correct Option
-    </label>
-
-    <Select
-      value={String(form.correctAnswer)}
-      onValueChange={(v) =>
-        setForm({ ...form, correctAnswer: Number(v) })
-      }
-    >
-      <SelectTrigger className="w-44">
-        <SelectValue placeholder="Select Correct Option" />
-      </SelectTrigger>
-
-      <SelectContent>
-        {[0, 1, 2, 3].map((i) => (
-          <SelectItem key={i} value={String(i)}>
-            Option {i + 1}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  </div>
-
-</div>
-
-
-          <div className="mt-9">
-  <Button onClick={handleSave}>
-    {editingId ? "Update" : "Add"}
-  </Button>
-</div>
-        </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium">Upload Excel</label>
+        <input type="file" accept=".xlsx" onChange={handleExcelUpload} />
       </div>
 
-      {/* TABLE */}
-      <div className="bg-card border rounded-xl overflow-hidden">
-        {loading ? (
-          <div className="p-6 text-center">
-            Loading...
-          </div>
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-muted">
-              <tr>
-                <th className="p-2 text-left">Question</th>
-                <th className="p-2">Subject</th>
-                <th className="p-2">Correct</th>
-                <th className="p-2"></th>
-                <th className="p-2"></th>
-                <th className="p-2"></th>
-                <th className="p-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {questions.map((q) => (
-                <tr key={q.id} className="border-t">
-                  <td className="p-3">{q.question}</td>
-                  <td className="p-3 capitalize">
-                    {q.subject}
-                  </td>
-                  <td className="p-3">
-                    Option {q.correctAnswer + 1}
-                  </td>
-                  <td className="p-3">
-                   
-                  </td><td className="p-3">
-                   
-                  </td>
-                  <td className="p-3">
-                   
-                  </td>
-                  <td className="p-3 flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(q)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() =>
-                        handleDelete(q.id)
-                      }
-                    >
-                      Delete
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium">Upload Word</label>
+        <input type="file" accept=".docx" onChange={handleWordUpload} />
       </div>
-
-      {/* PAGINATION */}
-      <div className="flex justify-center items-center gap-2 mt-8 flex-wrap">
-  {currentPage > 3 && (
-    <>
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() => loadPage(1)}
-      >
-        1
-      </Button>
-      {currentPage > 4 && <span>...</span>}
-    </>
-  )}
-
-  {Array.from({ length: totalPages }, (_, i) => i + 1)
-    .filter(
-      (page) =>
-        page >= currentPage - 2 &&
-        page <= currentPage + 2
-    )
-    .map((page) => (
-      <Button
-        key={page}
-        size="sm"
-        variant={
-          currentPage === page
-            ? "default"
-            : "outline"
-        }
-        onClick={() => loadPage(page)}
-      >
-        {page}
-      </Button>
-    ))}
-
-  {currentPage < totalPages - 2 && (
-    <>
-      {currentPage < totalPages - 3 && <span>...</span>}
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() => loadPage(totalPages)}
-      >
-        {totalPages}
-      </Button>
-    </>
-  )}
-</div>
-
     </div>
-  );
+
+    {/* FORM */}
+    <div className="bg-card border rounded-xl p-4 sm:p-6 mb-8">
+      <h2 className="font-semibold mb-4">
+        {editingId ? "Edit Question" : "Add Question"}
+      </h2>
+
+      <Input
+        placeholder="Question text"
+        value={form.question}
+        onChange={(e) =>
+          setForm({ ...form, question: e.target.value })
+        }
+        className="mb-3"
+      />
+
+      {form.options.map((opt, i) => (
+        <Input
+          key={i}
+          placeholder={`Option ${i + 1}`}
+          value={opt}
+          onChange={(e) => {
+            const updated = [...form.options];
+            updated[i] = e.target.value;
+            setForm({ ...form, options: updated });
+          }}
+          className="mb-2"
+        />
+      ))}
+
+      {/* SELECTS */}
+      <div className="flex flex-col sm:flex-row gap-4 mt-4">
+        {/* Subject */}
+        <div className="flex flex-col gap-1 w-full sm:w-auto">
+          <label className="text-sm font-medium text-muted-foreground">
+            Subject
+          </label>
+
+          <Select
+            value={form.subject}
+            onValueChange={(v) =>
+              setForm({ ...form, subject: v as any })
+            }
+          >
+            <SelectTrigger className="w-full sm:w-44">
+              <SelectValue placeholder="Select Subject" />
+            </SelectTrigger>
+
+            <SelectContent>
+              <SelectItem value="physics">Physics</SelectItem>
+              <SelectItem value="chemistry">Chemistry</SelectItem>
+              <SelectItem value="mathematics">
+                Mathematics
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Correct Option */}
+        <div className="flex flex-col gap-1 w-full sm:w-auto">
+          <label className="text-sm font-medium text-muted-foreground">
+            Correct Option
+          </label>
+
+          <Select
+            value={String(form.correctAnswer)}
+            onValueChange={(v) =>
+              setForm({ ...form, correctAnswer: Number(v) })
+            }
+          >
+            <SelectTrigger className="w-full sm:w-44">
+              <SelectValue placeholder="Select Correct Option" />
+            </SelectTrigger>
+
+            <SelectContent>
+              {[0, 1, 2, 3].map((i) => (
+                <SelectItem key={i} value={String(i)}>
+                  Option {i + 1}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <Button onClick={handleSave} className="w-full sm:w-auto">
+          {editingId ? "Update" : "Add"}
+        </Button>
+      </div>
+    </div>
+
+    {/* TABLE */}
+    <div className="bg-card border rounded-xl overflow-x-auto">
+      {loading ? (
+        <div className="p-6 text-center">Loading...</div>
+      ) : (
+        <table className="min-w-[700px] w-full text-sm">
+          <thead className="bg-muted">
+            <tr>
+              <th className="p-3 text-left">Question</th>
+              <th className="p-3">Subject</th>
+              <th className="p-3">Correct</th>
+              <th className="p-3 text-center">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {questions.map((q) => (
+              <tr key={q.id} className="border-t">
+                <td className="p-3">{q.question}</td>
+                <td className="p-3 capitalize text-center">
+                  {q.subject}
+                </td>
+                <td className="p-3 text-center">
+                  Option {q.correctAnswer + 1}
+                </td>
+                <td className="p-3 flex gap-2 justify-center">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleEdit(q)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() =>
+                      handleDelete(q.id)
+                    }
+                  >
+                    Delete
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+
+    {/* PAGINATION */}
+    <div className="flex justify-center items-center gap-2 mt-8 flex-wrap">
+      {Array.from({ length: totalPages }, (_, i) => {
+        const page = i + 1;
+
+        if (
+          page === 1 ||
+          page === totalPages ||
+          (page >= currentPage - 2 &&
+            page <= currentPage + 2)
+        ) {
+          return (
+            <Button
+              key={page}
+              size="sm"
+              variant={
+                currentPage === page
+                  ? "default"
+                  : "outline"
+              }
+              onClick={() => loadPage(page)}
+            >
+              {page}
+            </Button>
+          );
+        }
+
+        if (
+          page === currentPage - 3 ||
+          page === currentPage + 3
+        ) {
+          return <span key={page}>...</span>;
+        }
+
+        return null;
+      })}
+    </div>
+  </div>
+);
+
 };
 
 export default QuestionBank;

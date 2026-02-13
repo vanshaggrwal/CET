@@ -28,11 +28,10 @@ const AdminDashboard = () => {
         console.error("Init error:", error);
       }
     };
-
     init();
   }, []);
 
-  /* ================= LOAD SPECIFIC PAGE ================= */
+  /* ================= LOAD PAGE ================= */
 
   const loadPage = async (pageNumber: number) => {
     try {
@@ -60,7 +59,7 @@ const AdminDashboard = () => {
     }
   };
 
-  /* ===================== STATS ===================== */
+  /* ================= STATS ================= */
 
   const totalStudents = students.length;
 
@@ -70,58 +69,57 @@ const AdminDashboard = () => {
 
   const avgScore =
     scores.length > 0
-      ? Math.round(
-          scores.reduce((a, b) => a + b, 0) / scores.length
-        )
+      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
       : 0;
 
   const maxScore =
     scores.length > 0 ? Math.max(...scores) : 0;
 
-  /* ===================== RENDER ===================== */
+  /* ================= UI ================= */
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background px-4 sm:px-6 lg:px-8 py-6">
+
       {/* HEADER */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
           Admin Dashboard
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm sm:text-base text-muted-foreground">
           CET Mock Test – Student Performance Overview
         </p>
       </div>
 
-      {/* STATS CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      {/* STATS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-5">
             <p className="text-sm text-muted-foreground">
               Students On This Page
             </p>
-            <h2 className="text-3xl font-bold">
+            <h2 className="text-2xl sm:text-3xl font-bold">
               {totalStudents}
             </h2>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-5">
             <p className="text-sm text-muted-foreground">
               Average Score
             </p>
-            <h2 className="text-3xl font-bold">
+            <h2 className="text-2xl sm:text-3xl font-bold">
               {avgScore} / 150
             </h2>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-5">
             <p className="text-sm text-muted-foreground">
               Highest Score
             </p>
-            <h2 className="text-3xl font-bold text-green-600">
+            <h2 className="text-2xl sm:text-3xl font-bold text-green-600">
               {maxScore} / 150
             </h2>
           </CardContent>
@@ -131,93 +129,74 @@ const AdminDashboard = () => {
       {/* TABLE */}
       <div className="bg-card border rounded-xl overflow-hidden">
         {loading ? (
-          <div className="p-6 text-center">
+          <div className="p-6 text-center text-sm sm:text-base">
             Loading students...
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-muted">
-              <tr>
-                <th className="p-4 text-left">
-                  Student
-                </th>
-                <th className="p-4 text-left">
-                  Email
-                </th>
-                <th className="p-4 text-left">
-                  State
-                </th>
-                <th className="p-4 text-center">
-                  Total
-                </th>
-                <th className="p-4 text-center">
-                  Physics
-                </th>
-                <th className="p-4 text-center">
-                  Chemistry
-                </th>
-                <th className="p-4 text-center">
-                  Maths
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {students.map((s) => (
-                <tr
-                  key={s.id}
-                  className="border-t hover:bg-muted/50 transition"
-                >
-                  <td className="p-4 font-medium">
-                    {s.firstName} {s.lastName}
-                  </td>
-
-                  <td className="p-4">
-                    {s.email}
-                  </td>
-
-                  <td className="p-4">
-                    {s.state}
-                  </td>
-
-                  {/* TOTAL */}
-                  <td className="p-4 text-center">
-                    {s.latestResult ? (
-                      <Badge variant="default">
-                        {s.latestResult.totalScore}
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary">
-                        Not Attempted
-                      </Badge>
-                    )}
-                  </td>
-
-                  {/* PHYSICS */}
-                  <td className="p-4 text-center">
-                    {s.latestResult?.physics ??
-                      "—"}
-                  </td>
-
-                  {/* CHEMISTRY */}
-                  <td className="p-4 text-center">
-                    {s.latestResult?.chemistry ??
-                      "—"}
-                  </td>
-
-                  {/* MATHEMATICS */}
-                  <td className="p-4 text-center">
-                    {s.latestResult?.mathematics ??
-                      "—"}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-[800px] w-full text-xs sm:text-sm">
+              <thead className="bg-muted">
+                <tr>
+                  <th className="p-3 sm:p-4 text-left">Student</th>
+                  <th className="p-3 sm:p-4 text-left">Email</th>
+                  <th className="p-3 sm:p-4 text-left">State</th>
+                  <th className="p-3 sm:p-4 text-center">Total</th>
+                  <th className="p-3 sm:p-4 text-center">Physics</th>
+                  <th className="p-3 sm:p-4 text-center">Chemistry</th>
+                  <th className="p-3 sm:p-4 text-center">Maths</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody>
+                {students.map((s) => (
+                  <tr
+                    key={s.id}
+                    className="border-t hover:bg-muted/50 transition"
+                  >
+                    <td className="p-3 sm:p-4 font-medium">
+                      {s.firstName} {s.lastName}
+                    </td>
+
+                    <td className="p-3 sm:p-4 break-all">
+                      {s.email}
+                    </td>
+
+                    <td className="p-3 sm:p-4">
+                      {s.state}
+                    </td>
+
+                    <td className="p-3 sm:p-4 text-center">
+                      {s.latestResult ? (
+                        <Badge variant="default">
+                          {s.latestResult.totalScore}
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">
+                          Not Attempted
+                        </Badge>
+                      )}
+                    </td>
+
+                    <td className="p-3 sm:p-4 text-center">
+                      {s.latestResult?.physics ?? "—"}
+                    </td>
+
+                    <td className="p-3 sm:p-4 text-center">
+                      {s.latestResult?.chemistry ?? "—"}
+                    </td>
+
+                    <td className="p-3 sm:p-4 text-center">
+                      {s.latestResult?.mathematics ?? "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
-      {/* GOOGLE STYLE PAGINATION */}
+      {/* PAGINATION */}
       <div className="flex justify-center gap-2 mt-8 flex-wrap">
         {Array.from({ length: totalPages }, (_, i) => {
           const page = i + 1;
@@ -233,13 +212,10 @@ const AdminDashboard = () => {
                 key={page}
                 size="sm"
                 variant={
-                  currentPage === page
-                    ? "default"
-                    : "outline"
+                  currentPage === page ? "default" : "outline"
                 }
-                onClick={() =>
-                  loadPage(page)
-                }
+                onClick={() => loadPage(page)}
+                className="min-w-[36px]"
               >
                 {page}
               </Button>
@@ -251,7 +227,7 @@ const AdminDashboard = () => {
             page === currentPage + 3
           ) {
             return (
-              <span key={page}>
+              <span key={page} className="px-2">
                 ...
               </span>
             );

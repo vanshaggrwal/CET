@@ -147,14 +147,16 @@ const validatePhone = (phone: string) =>
     <div className="min-h-screen bg-background">
       <Header showMockTestLink={false} />
 
-      <div className="container py-8">
+     <div className="container px-4 sm:px-6 py-8">
+
         <ProgressIndicator
           currentStep={1}
           totalSteps={3}
           labels={["Registration", "Instructions", "Test"]}
         />
 
-        <div className="max-w-xl mx-auto mt-8">
+       <div className="max-w-xl mx-auto mt-6 sm:mt-8">
+
           <div className="exam-card">
             <h1 className="text-2xl font-semibold text-center mb-2">
               Student Registration
@@ -165,7 +167,8 @@ const validatePhone = (phone: string) =>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Name */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
                 <div>
                   <Label>First Name *</Label>
                   <Input
@@ -225,7 +228,8 @@ const validatePhone = (phone: string) =>
               </div>
 
               {/* State & City */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
                 <div>
                   <Label>State *</Label>
                   <Select

@@ -114,135 +114,157 @@ const Results = () => {
   const submissionReason = testState?.submissionReason;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+  <div className="min-h-screen bg-background">
+    <Header />
 
-      <div className="container py-12">
-        <div className="max-w-3xl mx-auto">
+    <div className="container px-4 sm:px-6 py-8 sm:py-12">
+      <div className="max-w-4xl mx-auto">
 
-          {submissionReason === 'violation' && (
-            <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-center">
-              <p className="text-destructive font-medium">
-                Test submitted due to navigation away from exam window.
-              </p>
-            </div>
-          )}
-
-          {submissionReason === 'timeout' && (
-            <div className="mb-6 p-4 rounded-lg bg-warning/10 border border-warning/30 text-center">
-              <p className="text-warning font-medium">
-                Test auto-submitted as time expired.
-              </p>
-            </div>
-          )}
-
-          <Card className="border-2 border-primary/20 shadow-lg mb-8">
-            <CardHeader className="text-center pb-4">
-              <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <Trophy className="h-8 w-8 text-primary" />
-              </div>
-              <CardTitle className="text-2xl text-foreground">
-                {getScoreMessage()}
-              </CardTitle>
-              <p className="text-muted-foreground">
-                {userData.firstName} {userData.lastName}
-              </p>
-            </CardHeader>
-
-            <CardContent>
-              <div className="text-center mb-8">
-                <p className={`text-6xl font-bold ${getScoreColor()}`}>
-                  {result.totalScore}
-                </p>
-                <p className="text-xl text-muted-foreground">
-                  out of {result.maxScore} marks
-                </p>
-                <p className="text-lg text-muted-foreground mt-2">
-                  ({getScorePercentage()}%)
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 rounded-lg bg-muted text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <BookOpen className="h-5 w-5 text-physics" />
-                    <span className="font-medium text-foreground">Physics</span>
-                  </div>
-                  <p className="text-2xl font-bold text-foreground">
-                    {result.physics.correct}/{result.physics.total} <br/></p>
-                  <p className="text-xs font-bold text-foreground">
-                    Attempted: {result.chemistry.attempted}
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-lg bg-muted text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Beaker className="h-5 w-5 text-success" />
-                    <span className="font-medium text-foreground">Chemistry</span>
-                  </div>
-                  <p className="text-2xl font-bold text-foreground">
-                    {result.chemistry.correct}/{result.chemistry.total}
-                    <br/></p>
-                     <p className="text-xs font-bold text-foreground">
-                    Attempted: {result.chemistry.attempted}
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-lg bg-muted text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Calculator className="h-5 w-5 text-mathematics" />
-                    <span className="font-medium text-foreground">Mathematics</span>
-                  </div>
-                  <p className="text-2xl font-bold text-foreground">
-                    {result.mathematics.correct}/{result.mathematics.total}<br/></p>
-                    <p className="text-xs font-bold text-foreground">
-                    Attempted: {result.chemistry.attempted}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="mb-8 bg-primary/5 border-primary/20">
-            <CardContent className="py-6">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <Mail className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-foreground">
-                    Check your email for detailed scorecard & brochure
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Sent to {userData.email}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              variant="outline" 
-              onClick={handleRetakeTest}
-              className="gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Retake Test
-            </Button>
-
-            <Link to="/">
-              <Button className="gap-2 w-full sm:w-auto">
-                <Home className="h-4 w-4" />
-                Back to Home
-              </Button>
-            </Link>
+        {/* Submission Warnings */}
+        {submissionReason === "violation" && (
+          <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-center">
+            <p className="text-destructive font-medium text-sm sm:text-base">
+              Test submitted due to navigation away from exam window.
+            </p>
           </div>
+        )}
 
+        {submissionReason === "timeout" && (
+          <div className="mb-6 p-4 rounded-lg bg-warning/10 border border-warning/30 text-center">
+            <p className="text-warning font-medium text-sm sm:text-base">
+              Test auto-submitted as time expired.
+            </p>
+          </div>
+        )}
+
+        {/* Main Result Card */}
+        <Card className="border-2 border-primary/20 shadow-lg mb-8">
+          <CardHeader className="text-center pb-4">
+            <div className="mx-auto mb-4 h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <Trophy className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            </div>
+
+            <CardTitle className="text-xl sm:text-2xl">
+              {getScoreMessage()}
+            </CardTitle>
+
+            <p className="text-muted-foreground text-sm sm:text-base">
+              {userData.firstName} {userData.lastName}
+            </p>
+          </CardHeader>
+
+          <CardContent>
+            {/* Total Score */}
+            <div className="text-center mb-8">
+              <p className={`text-4xl sm:text-6xl font-bold ${getScoreColor()}`}>
+                {result.totalScore}
+              </p>
+
+              <p className="text-base sm:text-xl text-muted-foreground">
+                out of {result.maxScore} marks
+              </p>
+
+              <p className="text-sm sm:text-lg text-muted-foreground mt-2">
+                ({getScorePercentage()}%)
+              </p>
+            </div>
+
+            {/* Subject Breakdown */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              
+              {/* Physics */}
+              <div className="p-4 rounded-lg bg-muted text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <BookOpen className="h-5 w-5 text-physics" />
+                  <span className="font-medium">Physics</span>
+                </div>
+
+                <p className="text-xl sm:text-2xl font-bold">
+                  {result.physics.correct}/{result.physics.total}
+                </p>
+
+                <p className="text-xs sm:text-sm font-medium">
+                  Attempted: {result.physics.attempted}
+                </p>
+              </div>
+
+              {/* Chemistry */}
+              <div className="p-4 rounded-lg bg-muted text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Beaker className="h-5 w-5 text-success" />
+                  <span className="font-medium">Chemistry</span>
+                </div>
+
+                <p className="text-xl sm:text-2xl font-bold">
+                  {result.chemistry.correct}/{result.chemistry.total}
+                </p>
+
+                <p className="text-xs sm:text-sm font-medium">
+                  Attempted: {result.chemistry.attempted}
+                </p>
+              </div>
+
+              {/* Mathematics */}
+              <div className="p-4 rounded-lg bg-muted text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Calculator className="h-5 w-5 text-mathematics" />
+                  <span className="font-medium">Mathematics</span>
+                </div>
+
+                <p className="text-xl sm:text-2xl font-bold">
+                  {result.mathematics.correct}/{result.mathematics.total}
+                </p>
+
+                <p className="text-xs sm:text-sm font-medium">
+                  Attempted: {result.mathematics.attempted}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Email Info Card */}
+        <Card className="mb-8 bg-primary/5 border-primary/20">
+          <CardContent className="py-6">
+            <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Mail className="h-6 w-6 text-primary" />
+              </div>
+
+              <div>
+                <h3 className="font-medium">
+                  Check your email for detailed scorecard & brochure
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Sent to {userData.email}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button
+            variant="outline"
+            onClick={handleRetakeTest}
+            className="gap-2 w-full sm:w-auto"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Retake Test
+          </Button>
+
+          <Link to="/" className="w-full sm:w-auto">
+            <Button className="gap-2 w-full sm:w-auto">
+              <Home className="h-4 w-4" />
+              Back to Home
+            </Button>
+          </Link>
         </div>
+
       </div>
     </div>
-  );
-};
-
+  </div>
+);
+}
 export default Results;

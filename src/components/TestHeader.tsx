@@ -58,35 +58,44 @@ const TestHeader = ({
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <GraduationCap className="h-5 w-5" />
-          </div>
-          <span className="text-lg font-semibold">
-            CET Mock Test
-          </span>
-        </div>
-
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 bg-muted px-4 py-2 rounded-lg">
-            <Clock className="h-5 w-5" />
-            <span className={`font-mono text-lg ${color}`}>
-              {formatTime(timeLeft)}
+      <div className="container px-4 sm:px-6">
+        
+        {/* Mobile Layout */}
+        <div className="flex flex-col sm:flex-row sm:h-16 sm:items-center justify-between gap-3 py-3 sm:py-0">
+          
+          {/* Logo Section */}
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <GraduationCap className="h-5 w-5" />
+            </div>
+            <span className="text-base sm:text-lg font-semibold">
+              CET Mock Test
             </span>
           </div>
 
-          <Button
-            variant={isFullExam ? "default" : "destructive"}
-            className={
-              isFullExam
-                ? "bg-green-600 hover:bg-green-700 text-white"
-                : ""
-            }
-            onClick={onManualSubmit}
-          >
-            Submit Test
-          </Button>
+          {/* Timer + Submit */}
+          <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6">
+            
+            <div className="flex items-center gap-2 bg-muted px-3 sm:px-4 py-2 rounded-lg">
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className={`font-mono text-base sm:text-lg ${color}`}>
+                {formatTime(timeLeft)}
+              </span>
+            </div>
+
+            <Button
+              size="sm"
+              variant={isFullExam ? "default" : "destructive"}
+              className={
+                isFullExam
+                  ? "bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base px-4 sm:px-6"
+                  : "text-sm sm:text-base px-4 sm:px-6"
+              }
+              onClick={onManualSubmit}
+            >
+              Submit
+            </Button>
+          </div>
         </div>
       </div>
     </header>
